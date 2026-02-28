@@ -57,13 +57,21 @@
     padding: 15px 10px;
 }
 
-.search-box .result-box ul li {
+.search-box .result-box ul li:not(.listheader) {
     list-style: none;
     border-radius: 3px;
     padding: 15px 10px;
     cursor: pointer;
 }
 
-.search-box .result-box ul li:hover {
+.search-box .result-box ul li:not(.listheader):hover {
     background-color: #ccc;
+}
+
+.listheader {
+    list-style: none;
+    border-radius: 3px;
+    padding: 0 10px;
+    font-size: 12px;
+    color:#333
 }
