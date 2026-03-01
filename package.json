@@ -47,7 +47,8 @@
     "puppeteer": "^24.3.0"
   },
   "dependencies": {
-    "@soli-deo-gloria-software/bible-books": "^0.9.5"
+    "@soli-deo-gloria-software/bible-books": "^0.9.5",
+    "@soli-deo-gloria-software/bible-reference-finder": "^0.9.11"
   },
   "license": "MIT"
 }

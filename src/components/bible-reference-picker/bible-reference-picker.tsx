@@ -1,5 +1,6 @@
 import { Component, Host, State, h } from '@stencil/core';
 import { BibleBookInfo, BibleBooks, BibleChapter } from '@soli-deo-gloria-software/bible-books'
+import { BibleParser, BibleReference} from '@soli-deo-gloria-software/bible-reference-finder'
 import { ReferencePickerState } from '../../utils/enums';
 
 @Component({
@@ -14,9 +15,36 @@ export class BibleReferencePicker {
   @State() availableNumbers: number[] = [];
   selectedBook: BibleBookInfo;
   allowedRegex: RegExp;
-
+  @State() references: BibleReference[] = [];
   //TODO: Output BibleBookReference[] with a max count specified by an input.
 
+  handlePaste = (event: ClipboardEvent) => {
+    console.log('paste event' + event.clipboardData.types)
+    if (event.clipboardData == undefined) {
+      return;
+    }
+
+    let text = event.clipboardData.getData('text/plain');
+
+    if (!text) {
+      return;
+    }
+
+    let parser = new BibleParser(); //TODO: Shared instance?
+    let parsed = parser.parse(text);
+    if (!parsed) {
+      return;
+    }
+
+    let references: BibleReference[] = []
+    //TODO: clean up - only accept up to the configured number of reference.
+    parsed.forEach(collection => {
+      collection.BibleReferences.forEach(reference => {
+        references.push(reference);
+      })
+    })
+    this.references = references;
+  }
 
   textChange = (event) => {
     //TODO: Prevent input if allowedRegexp is set and text is invalid.
@@ -80,38 +108,47 @@ export class BibleReferencePicker {
     this.value += selectedNumber.toString();
   }
 
+  removeReference(reference: BibleReference){
+    this.references = this.references.filter(ref => ref.Canonical != reference.Canonical);
+  }
+
   render() {
     return (
       <Host>
-          <div class="search-box">
-            <div class="row">
-                <input type="text" name="input" value={this.value} id="input" placeholder="Scripture Reference" autocomplete="off" onInput={(event) => this.textChange(event)} />
-                <button>search</button>
-            </div>
-            <div class={{'show': this.books.length > 0, 'result-box':true}}>
-                <ul>
-                  <li class="listheader">Select Book</li>
-                  {this.books.map((item) => {
-                    return <li onClick={() => this.selectBook(item)}>{item.CanonicalName}</li>
-                  })}
-                </ul>
-            </div>
-            <div class={{'show': this.availableNumbers.length > 0, 'result-box': true}}>
+        <div class="search-box">
+          <div class="reference-box">
+            { this.references.map(reference => {
+              return <span class="reference">{reference.Canonical} &nbsp; <span class="clickable" onClick={() => this.removeReference(reference)}>| &nbsp; &times; &nbsp;</span></span>
+            })}
+          </div>
+          <div class="row">
+              <input type="text" name="input" value={this.value} id="input" placeholder="Scripture Reference" autocomplete="off" onInput={(event) => this.textChange(event)} onPaste={(event) => this.handlePaste(event)}/>
+              <button>search</button>
+          </div>
+          <div class={{'show': this.books.length > 0, 'result-box':true}}>
               <ul>
-                {
-                  this.step == ReferencePickerState.Chapter ? (
-                    <li class="listheader">Select Chapter</li>
-                  ) : (
-                    <li class="listheader">Select Verse</li>
-                  )
-                }
-                {
-                  this.availableNumbers.map((number) => {
-                    return <li onClick={() => this.selectNumber(number)}>{number}</li>
-                  })
-                }
+                <li class="listheader">Select Book</li>
+                {this.books.map((item) => {
+                  return <li onClick={() => this.selectBook(item)}>{item.CanonicalName}</li>
+                })}
               </ul>
-            </div>
+          </div>
+          <div class={{'show': this.availableNumbers.length > 0, 'result-box': true}}>
+            <ul>
+              {
+                this.step == ReferencePickerState.Chapter ? (
+                  <li class="listheader">Select Chapter</li>
+                ) : (
+                  <li class="listheader">Select Verse</li>
+                )
+              }
+              {
+                this.availableNumbers.map((number) => {
+                  return <li onClick={() => this.selectNumber(number)}>{number}</li>
+                })
+              }
+            </ul>
+          </div>
         </div>
       </Host>
     );
