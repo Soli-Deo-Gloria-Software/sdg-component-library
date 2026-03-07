@@ -43,22 +43,32 @@ export class BibleReferencePicker {
         references.push(reference);
       })
     })
-    this.references = references;
+
+    if (references.length > 0) {
+      this.references = references;
+      event.preventDefault();
+    }
   }
 
-  textChange = (event) => {
+  textChange = (event: InputEvent) => {
     //TODO: Prevent input if allowedRegexp is set and text is invalid.
-    //TODO: Handle Paste using bible reference parser to see if it's a full reference. If not carry on to the matches below.
     //Todo: handle enter press and semi-colon press as "early" termination of a reference - parse text and if valid reference, store the result.
-    //TODO: handle esc press as cancel of process - reset all states and clear current imput.
 
+    let input = (event.target as any).value.toLowerCase();
+    this.value = input;
+    this.handleTextChange(input);
+  }
+
+  handleTextChange(currentText: string, autocomplete?: boolean) {
+    currentText = currentText.toLowerCase();
     if (this.step == ReferencePickerState.Book){
-      let input = event.target.value.toLowerCase();
 
-      if (input && input.length > 1) {
-        this.books = BibleBooks.filter(book => book.Name.toLowerCase().includes(input));
-        if (this.books.length == 1 && this.books[0].Name.toLowerCase() == input.toLowerCase()){
-          this.selectBook(this.books[0]);
+      if (currentText && currentText.length > 1) {
+        this.books = BibleBooks.filter(book => book.Name.toLowerCase().includes(currentText));
+        if (this.books.length == 1){
+          if (autocomplete || this.books[0].Name.toLowerCase() == currentText) {
+            this.selectBook(this.books[0]);
+          }
         }
       }
     } else {
@@ -67,9 +77,28 @@ export class BibleReferencePicker {
     }
   }
 
+  handleKeyPress = (event: KeyboardEvent) => {
+    if (event.key == 'Escape') { //Cancel entry
+      this.resetReferenceBuilder();
+      event.preventDefault();
+    } else if (event.key == "Tab") { //Complete current step
+      this.handleTextChange(this.value, true);
+      event.preventDefault();
+    } else if (event.key == "Enter" || event.key == ";") { // Parse reference
+
+    }
+  }
+
+  resetReferenceBuilder = () => {
+      this.value = '';
+      this.books = [];
+      this.availableNumbers = [];
+      this.step = ReferencePickerState.Book;
+  }
+
   selectBook = (selectedBook: BibleBookInfo) => {
     console.log('selected: ' + selectedBook.CanonicalName)
-    this.value = selectedBook.CanonicalName;
+    this.value = selectedBook.CanonicalName + ' ';
     this.selectedBook = selectedBook;
 
     if (selectedBook.Chapters.length == 1){
@@ -122,8 +151,14 @@ export class BibleReferencePicker {
             })}
           </div>
           <div class="row">
-              <input type="text" name="input" value={this.value} id="input" placeholder="Scripture Reference" autocomplete="off" onInput={(event) => this.textChange(event)} onPaste={(event) => this.handlePaste(event)}/>
-              <button>search</button>
+              <input type="text" name="input" 
+                value={this.value} 
+                id="input" 
+                placeholder="Scripture Reference" 
+                autocomplete="off" 
+                onInput={(event) => this.textChange(event)} 
+                onPaste={(event) => this.handlePaste(event)} 
+                onKeyDown={(event) => this.handleKeyPress(event)}/>
           </div>
           <div class={{'show': this.books.length > 0, 'result-box':true}}>
               <ul>
