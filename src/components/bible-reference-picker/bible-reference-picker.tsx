@@ -15,6 +15,11 @@ export class BibleReferencePicker {
   @State() availableNumbers: number[] = [];
   selectedBook: BibleBookInfo;
   allowedRegex: RegExp;
+  alphaNumericRegex: RegExp = /[A-Za-z0-9:\-]/
+  startChapter?: number;
+  startVerse?: number;
+  endChapter?: number;
+  endVerse?: number;
   @State() references: BibleReference[] = [];
   //TODO: Output BibleBookReference[] with a max count specified by an input.
 
@@ -30,6 +35,15 @@ export class BibleReferencePicker {
       return;
     }
 
+    let referenceFound = this.handleReferenceSubmit(text);
+
+    if (referenceFound) {
+      event.preventDefault();
+      this.resetReferenceBuilder();
+    }
+  }
+
+  handleReferenceSubmit = (text: string): boolean => {
     let parser = new BibleParser(); //TODO: Shared instance?
     let parsed = parser.parse(text);
     if (!parsed) {
@@ -46,23 +60,27 @@ export class BibleReferencePicker {
 
     if (references.length > 0) {
       this.references = references;
-      event.preventDefault();
+      return true;
+    } else {
+      this.value = text;
     }
+
+    return false;
   }
 
   textChange = (event: InputEvent) => {
-    //TODO: Prevent input if allowedRegexp is set and text is invalid.
-    //Todo: handle enter press and semi-colon press as "early" termination of a reference - parse text and if valid reference, store the result.
-
     let input = (event.target as any).value.toLowerCase();
     this.value = input;
     this.handleTextChange(input);
   }
 
   handleTextChange(currentText: string, autocomplete?: boolean) {
-    currentText = currentText.toLowerCase();
-    if (this.step == ReferencePickerState.Book){
+    if (!currentText) {
+      this.resetReferenceBuilder();
+    }
 
+    currentText = currentText.toLowerCase().replaceAll('  ', ' ');
+    if (this.step == ReferencePickerState.Book){
       if (currentText && currentText.length > 1) {
         this.books = BibleBooks.filter(book => book.Name.toLowerCase().includes(currentText));
         if (this.books.length == 1){
@@ -72,20 +90,42 @@ export class BibleReferencePicker {
         }
       }
     } else {
-      //TODO: if value exceeds max available number, prevent input OR cap at max number.
-      // Handle range and colon delimiters
+      if (currentText.endsWith(":")) {
+        let chapter = '';
+        if (!this.startChapter) {
+          chapter = currentText.replace(this.selectedBook.CanonicalName.toLowerCase() + ' ', '').replace(":", '').replaceAll(' ', '');
+          if (!isNaN(+chapter)) {
+            this.startChapter = +chapter;
+            this.loadVerses(this.selectedBook.Chapters[this.startChapter - 1])
+          }
+        }
+        //TODO: End Chapter
+      } else if (currentText.endsWith("-")) {
+        //TODO: Set start chapter and load end chapters
+      } else {
+        //TODO: if value exceeds max available number, prevent input OR cap at max number.
+      }
     }
   }
 
   handleKeyPress = (event: KeyboardEvent) => {
-    if (event.key == 'Escape') { //Cancel entry
+    if (event.key == "Backspace") { // Handle chapter/verse deletion
+    }
+    else if (event.key == 'Escape') { //Cancel entry
       this.resetReferenceBuilder();
       event.preventDefault();
     } else if (event.key == "Tab") { //Complete current step
       this.handleTextChange(this.value, true);
       event.preventDefault();
     } else if (event.key == "Enter" || event.key == ";") { // Parse reference
-
+      if (this.handleReferenceSubmit(this.value)) {
+        event.preventDefault();
+        this.resetReferenceBuilder();
+      }
+    } else if (this.alphaNumericRegex.test(event.key)) { //Note: This doesn't work correctly. Need a better way to detect special keys.
+      if (this.allowedRegex && !this.allowedRegex.test(event.key)){ //Block text change event.
+        event.preventDefault(); //TODO: Invalid text indicator.
+      }
     }
   }
 
@@ -94,6 +134,11 @@ export class BibleReferencePicker {
       this.books = [];
       this.availableNumbers = [];
       this.step = ReferencePickerState.Book;
+      this.allowedRegex = undefined;
+      this.startChapter = undefined;
+      this.startVerse = undefined;
+      this.endChapter = undefined;
+      this.endVerse = undefined;
   }
 
   selectBook = (selectedBook: BibleBookInfo) => {
@@ -102,6 +147,7 @@ export class BibleReferencePicker {
     this.selectedBook = selectedBook;
 
     if (selectedBook.Chapters.length == 1){
+      this.startChapter = 1;
       this.loadVerses(selectedBook.Chapters[0]);
     } else {
       this.loadChapters(selectedBook);
@@ -114,7 +160,7 @@ export class BibleReferencePicker {
     this.availableNumbers = book.Chapters.filter(chapter => chapter.Number >= startChapter).map(chapter => chapter.Number);
     this.step = ReferencePickerState.Chapter;
     // Think about number of decimals allowed. For instance, most chapters only have double digit chapterss and none have 4 digits, so 1111 is invalid...
-    this.allowedRegex = new RegExp(/^\d+[\d:\-]$/g); //Untested: only allow numbers optionally ending with : or -.
+    this.allowedRegex = new RegExp(/^[\d:\-]$/g); //Untested: only allow numbers optionally ending with : or -.
   }
 
   loadVerses = (chapter: BibleChapter, startVerse?: number) => {
@@ -122,7 +168,7 @@ export class BibleReferencePicker {
     this.availableNumbers = this.createArray(startVerse, chapter.VerseCount);
     this.step = ReferencePickerState.Verse;
     // Think about number of decimals allowed. For instance, most chapters only have double digit versess and none have 4 digits, so 1111 is invalid...
-    this.allowedRegex = new RegExp(/^\d+[\d\-]$/g); //Untested: only allow numbers optionally ending with a dash for a range.
+    this.allowedRegex = new RegExp(/^[\d\-]$/g); //Untested: only allow numbers optionally ending with a dash for a range.
   }
 
   createArray = (start: number, end: number): number[] => {
