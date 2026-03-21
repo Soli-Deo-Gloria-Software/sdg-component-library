@@ -5,12 +5,34 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
+import { BibleReference } from "@soli-deo-gloria-software/bible-reference-finder";
+export { BibleReference } from "@soli-deo-gloria-software/bible-reference-finder";
 export namespace Components {
     interface BibleReferencePicker {
+        /**
+          * Maximum number of references that can be collected.
+          * @default 100
+         */
+        "maxReferences": number;
     }
 }
+export interface BibleReferencePickerCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLBibleReferencePickerElement;
+}
 declare global {
+    interface HTMLBibleReferencePickerElementEventMap {
+        "referencesChange": BibleReference[];
+    }
     interface HTMLBibleReferencePickerElement extends Components.BibleReferencePicker, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLBibleReferencePickerElementEventMap>(type: K, listener: (this: HTMLBibleReferencePickerElement, ev: BibleReferencePickerCustomEvent<HTMLBibleReferencePickerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLBibleReferencePickerElementEventMap>(type: K, listener: (this: HTMLBibleReferencePickerElement, ev: BibleReferencePickerCustomEvent<HTMLBibleReferencePickerElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLBibleReferencePickerElement: {
         prototype: HTMLBibleReferencePickerElement;
@@ -22,9 +44,20 @@ declare global {
 }
 declare namespace LocalJSX {
     interface BibleReferencePicker {
+        /**
+          * Maximum number of references that can be collected.
+          * @default 100
+         */
+        "maxReferences"?: number;
+        "onReferencesChange"?: (event: BibleReferencePickerCustomEvent<BibleReference[]>) => void;
     }
+
+    interface BibleReferencePickerAttributes {
+        "maxReferences": number;
+    }
+
     interface IntrinsicElements {
-        "bible-reference-picker": BibleReferencePicker;
+        "bible-reference-picker": Omit<BibleReferencePicker, keyof BibleReferencePickerAttributes> & { [K in keyof BibleReferencePicker & keyof BibleReferencePickerAttributes]?: BibleReferencePicker[K] } & { [K in keyof BibleReferencePicker & keyof BibleReferencePickerAttributes as `attr:${K}`]?: BibleReferencePickerAttributes[K] } & { [K in keyof BibleReferencePicker & keyof BibleReferencePickerAttributes as `prop:${K}`]?: BibleReferencePicker[K] };
     }
 }
 export { LocalJSX as JSX };
