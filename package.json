@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@soli-deo-gloria-software/bible-books": "^0.9.5",
-    "@soli-deo-gloria-software/bible-reference-finder": "^0.9.13"
+    "@soli-deo-gloria-software/bible-reference-finder": "^0.9.14"
   },
   "license": "MIT"
 }

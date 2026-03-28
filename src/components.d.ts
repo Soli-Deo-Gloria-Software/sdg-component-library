@@ -15,6 +15,8 @@ export namespace Components {
          */
         "maxReferences": number;
     }
+    interface BibleReferencePickerV2 {
+    }
 }
 export interface BibleReferencePickerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -38,8 +40,15 @@ declare global {
         prototype: HTMLBibleReferencePickerElement;
         new (): HTMLBibleReferencePickerElement;
     };
+    interface HTMLBibleReferencePickerV2Element extends Components.BibleReferencePickerV2, HTMLStencilElement {
+    }
+    var HTMLBibleReferencePickerV2Element: {
+        prototype: HTMLBibleReferencePickerV2Element;
+        new (): HTMLBibleReferencePickerV2Element;
+    };
     interface HTMLElementTagNameMap {
         "bible-reference-picker": HTMLBibleReferencePickerElement;
+        "bible-reference-picker-v2": HTMLBibleReferencePickerV2Element;
     }
 }
 declare namespace LocalJSX {
@@ -51,6 +60,8 @@ declare namespace LocalJSX {
         "maxReferences"?: number;
         "onReferencesChange"?: (event: BibleReferencePickerCustomEvent<BibleReference[]>) => void;
     }
+    interface BibleReferencePickerV2 {
+    }
 
     interface BibleReferencePickerAttributes {
         "maxReferences": number;
@@ -58,6 +69,7 @@ declare namespace LocalJSX {
 
     interface IntrinsicElements {
         "bible-reference-picker": Omit<BibleReferencePicker, keyof BibleReferencePickerAttributes> & { [K in keyof BibleReferencePicker & keyof BibleReferencePickerAttributes]?: BibleReferencePicker[K] } & { [K in keyof BibleReferencePicker & keyof BibleReferencePickerAttributes as `attr:${K}`]?: BibleReferencePickerAttributes[K] } & { [K in keyof BibleReferencePicker & keyof BibleReferencePickerAttributes as `prop:${K}`]?: BibleReferencePicker[K] };
+        "bible-reference-picker-v2": BibleReferencePickerV2;
     }
 }
 export { LocalJSX as JSX };
@@ -65,6 +77,7 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "bible-reference-picker": LocalJSX.IntrinsicElements["bible-reference-picker"] & JSXBase.HTMLAttributes<HTMLBibleReferencePickerElement>;
+            "bible-reference-picker-v2": LocalJSX.IntrinsicElements["bible-reference-picker-v2"] & JSXBase.HTMLAttributes<HTMLBibleReferencePickerV2Element>;
         }
     }
 }
