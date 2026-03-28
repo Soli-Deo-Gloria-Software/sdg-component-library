@@ -36,22 +36,27 @@ export class BibleReferencePicker {
    */
   private suppressBookCanonicalization = false;
 
-  private getBookAliases(book: BibleBookInfo): string[] {
+  private getBookAliases(book: BibleBookInfo, exactOnly?: boolean): string[] {
+    exactOnly = exactOnly??false;
     const aliases = new Set<string>();
     aliases.add(book.Name);
     aliases.add(book.CanonicalName);
-    if (book.OsisCode) {
-      aliases.add(book.OsisCode);
+
+    if (!exactOnly) {
+      if (book.OsisCode) {
+        aliases.add(book.OsisCode);
+      }
+      const common = CommonVariations.get(book.Book);
+      if (common) {
+        common.forEach((a) => aliases.add(a));
+      }
     }
-    const common = CommonVariations.get(book.Book);
-    if (common) {
-      common.forEach((a) => aliases.add(a));
-    }
+    
     return [...aliases];
   }
 
   private longestBookMatch(
-    value: string,
+    value: string, exactOnly?: boolean
   ): { book: BibleBookInfo; alias: string } | null {
     const v = value.trimStart();
     if (!v) {
@@ -61,7 +66,7 @@ export class BibleReferencePicker {
     let best: { book: BibleBookInfo; alias: string } | null = null;
 
     for (const book of BibleBooks) {
-      const aliases = this.getBookAliases(book).sort((a, b) => b.length - a.length);
+      const aliases = this.getBookAliases(book, exactOnly).sort((a, b) => b.length - a.length);
       for (const alias of aliases) {
         const al = alias.toLowerCase();
         if (!vl.startsWith(al)) {
@@ -290,7 +295,7 @@ export class BibleReferencePicker {
 
   private syncFromValue(full: string) {
     const t = full.trimStart();
-    const match = this.longestBookMatch(t);
+    const match = this.longestBookMatch(t, true);
     if (!match) {
       this.selectedBook = undefined;
       this.step = ReferencePickerState.Book;
@@ -315,16 +320,7 @@ export class BibleReferencePicker {
     }
   }
 
-  private normalizeBookPrefixInValue(full: string, book: BibleBookInfo): string {
-    const m = this.longestBookMatch(full);
-    if (!m || m.book.Book !== book.Book) {
-      return full;
-    }
-    const suffix = full.trimStart().slice(m.alias.length).trimStart();
-    return suffix ? `${book.CanonicalName} ${suffix}` : book.CanonicalName;
-  }
-
-  handleTextChange(currentText: string, options?: { autocomplete?: boolean }) {
+  handleTextChange(currentText: string) {
     const text = currentText.replace(/\s{2,}/g, ' ');
     if (!text.trim()) {
       this.resetReferenceBuilder();
@@ -333,17 +329,6 @@ export class BibleReferencePicker {
     }
     this.value = text;
     this.syncFromValue(text);
-
-    const auto = options?.autocomplete;
-    if (auto && !this.suppressBookCanonicalization && this.step === ReferencePickerState.Book && text.trim()) {
-      const list = this.filterBooksByQuery(text.trim());
-      if (list.length === 1) {
-        const b = list[0];
-        this.value = this.normalizeBookPrefixInValue(text, b);
-        this.syncFromValue(this.value);
-      }
-    }
-    this.suppressBookCanonicalization = false;
   }
 
   textChange = (event: Event) => {
