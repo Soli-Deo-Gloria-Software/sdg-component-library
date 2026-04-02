@@ -89,6 +89,9 @@ export class BibleReferencePickerV2 {
     } else {
       let nonBookSegment = currentText.replace(this.selectedBook.CanonicalName.toLowerCase(), '').trimStart();
       this.incompleteReference = this._parser.getSingleRawReference(this.selectedBook, nonBookSegment)[0];
+      if (this.incompleteReference.StartingChapter && !this.incompleteReference.StartingVerse && this.value.endsWith(":")){
+        this.loadVerses(this.selectedBook.Chapters[this.incompleteReference.StartingChapter-1])
+      } 
     }
   }
 
@@ -128,11 +131,11 @@ export class BibleReferencePickerV2 {
         event.preventDefault();
         this.resetReferenceBuilder();
       }
-    } else if (this.alphaNumericRegex.test(event.key)) { //Note: This doesn't work correctly. Need a better way to detect special keys.
-      if (this.allowedRegex && !this.allowedRegex.test(event.key)){ //Block text change event.
-        event.preventDefault(); //TODO: Invalid text indicator.
-      }
-    }
+    } //else if (this.alphaNumericRegex.test(event.key)) { //Note: This doesn't work correctly. Need a better way to detect special keys.
+      //if (this.allowedRegex && !this.allowedRegex.test(event.key)){ //Block text change event.
+       // event.preventDefault(); //TODO: Invalid text indicator.
+      //}
+    //}
   }
 
   resetReferenceBuilder = (preserveValue?: boolean) => {
