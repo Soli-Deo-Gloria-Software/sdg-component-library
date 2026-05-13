@@ -10,19 +10,21 @@ import { ReferencePickerState } from '../../utils/enums';
 })
 export class BibleReferencePickerV2 {
   private _parser = new BibleParser();
-  @State() value: string;
+  @State() value: string = '';
   @State() books: BibleBookInfo[] = [];
   @State() step: ReferencePickerState = ReferencePickerState.Book;
   @State() availableNumbers: number[] = [];
-  selectedBook: BibleBookInfo;
-  allowedRegex: RegExp;
+  selectedBook: BibleBookInfo | undefined;
+  allowedRegex: RegExp | undefined;
   alphaNumericRegex: RegExp = /[A-Za-z0-9: \-]/
-  incompleteReference: RawBibleParseResult;
+  incompleteReference: RawBibleParseResult | undefined;
+  inputElement!: HTMLElement;
   @State() references: BibleReference[] = [];
+  isEnd: boolean = false;
   //TODO: Output BibleBookReference[] with a max count specified by an input.
 
   handlePaste = (event: ClipboardEvent) => {
-    console.log('paste event' + event.clipboardData.types)
+    console.log('paste event' + event.clipboardData?.types)
     if (event.clipboardData == undefined) {
       return;
     }
@@ -44,10 +46,10 @@ export class BibleReferencePickerV2 {
   handleReferenceSubmit = (text: string): boolean => {
     let parsed = this._parser.parse(text);
     if (!parsed) {
-      return;
+      return false;
     }
 
-    let references: BibleReference[] = []
+    let references: BibleReference[] = [...this.references]
     //TODO: clean up - only accept up to the configured number of reference.
     parsed.forEach(collection => {
       collection.BibleReferences.forEach(reference => {
@@ -56,7 +58,7 @@ export class BibleReferencePickerV2 {
     })
 
     if (references.length > 0) {
-      this.references = references;
+      this.references = [...references];
       return true;
     } else {
       this.value = text;
@@ -76,21 +78,35 @@ export class BibleReferencePickerV2 {
       this.resetReferenceBuilder();
     }
 
-    currentText = currentText.toLowerCase().replaceAll('  ', ' ');
+    currentText = currentText.toLowerCase().replaceAll('  ', ' ').trimEnd();
     if (this.step == ReferencePickerState.Book){
       if (currentText && currentText.length > 1) {
         this.books = BibleBooks.filter(book => book.Name.toLowerCase().includes(currentText));
         if (this.books.length == 1){
-          if (autocomplete || this.books[0].Name.toLowerCase() == currentText) {
-            this.selectBook(this.books[0]);
+          let exactMatch= this.books[0].Name.toLowerCase() == currentText
+          if (autocomplete || exactMatch) {
+            this.selectBook(this.books[0], !exactMatch);
           }
         }
       }
     } else {
-      let nonBookSegment = currentText.replace(this.selectedBook.CanonicalName.toLowerCase(), '').trimStart();
-      this.incompleteReference = this._parser.getSingleRawReference(this.selectedBook, nonBookSegment)[0];
-      if (this.incompleteReference.StartingChapter && !this.incompleteReference.StartingVerse && this.value.endsWith(":")){
-        this.loadVerses(this.selectedBook.Chapters[this.incompleteReference.StartingChapter-1])
+      let nonBookSegment = currentText.replace(this.selectedBook?.CanonicalName.toLowerCase() ?? '', '').trimStart();
+      this.incompleteReference = this._parser.getSingleRawReference(this.selectedBook!, nonBookSegment)[0];
+      if (this.incompleteReference.StartingChapter) {
+        if (!this.incompleteReference.StartingVerse) {
+          if (this.value.endsWith(":")) {
+            this.loadVerses(this.selectedBook!.Chapters[this.incompleteReference.StartingChapter-1])
+          } else if (this.value.endsWith("-")){
+            this.isEnd = true;
+            this.loadChapters(this.selectedBook!, this.incompleteReference.StartingChapter + 1);
+          }
+        } else {
+          //Verse is set here.
+          if (this.value.endsWith("-")){
+            this.isEnd = true;
+            this.loadVerses(this.selectedBook!.Chapters[this.incompleteReference.StartingChapter-1], this.incompleteReference.StartingVerse + 1)
+          }
+        }
       } 
     }
   }
@@ -110,10 +126,10 @@ export class BibleReferencePickerV2 {
           this.resetReferenceBuilder(true);
         } else {
           if (!this.value.includes('-')) {
-            this.incompleteReference.setEnding(undefined, undefined);
+            this.incompleteReference!.setEnding(undefined, undefined);
           } else if (!this.value.includes(":") && this.selectedBook.Chapters.length > 1) {
-            this.incompleteReference.StartingVerse = undefined;
-            this.incompleteReference.StartingChapter = undefined;
+            this.incompleteReference!.StartingVerse = undefined;
+            this.incompleteReference!.StartingChapter = undefined;
             this.loadChapters(this.selectedBook);
             this.step = ReferencePickerState.Chapter;
           }
@@ -148,6 +164,7 @@ export class BibleReferencePickerV2 {
       this.selectedBook = undefined;
       this.allowedRegex = undefined;
       this.incompleteReference = undefined;
+      this.isEnd = false;
   }
 
   selectBook = (selectedBook: BibleBookInfo, addSpace?: boolean) => {
@@ -159,7 +176,7 @@ export class BibleReferencePickerV2 {
     this.selectedBook = selectedBook;
 
     if (selectedBook.Chapters.length == 1){
-      this.incompleteReference.StartingChapter = 1;
+      this.incompleteReference!.StartingChapter = 1;
       this.loadVerses(selectedBook.Chapters[0]);
     } else {
       this.loadChapters(selectedBook);
@@ -198,7 +215,7 @@ export class BibleReferencePickerV2 {
   selectNumber = (selectedNumber: number) => {
     this.value += selectedNumber.toString();
     if (this.step == ReferencePickerState.Chapter) {
-      let chapter = this.selectedBook.Chapters.find(ch => ch.Number == selectedNumber);
+      let chapter = this.selectedBook!.Chapters.find(ch => ch.Number == selectedNumber);
       this.loadVerses(chapter);
     } //TODO: Verses.
   }
@@ -218,6 +235,7 @@ export class BibleReferencePickerV2 {
           </div>
           <div class="row">
               <input type="text" name="input" 
+                ref={(el) => (this.inputElement = el as HTMLInputElement)}
                 value={this.value} 
                 id="input" 
                 placeholder="Scripture Reference" 
@@ -230,22 +248,29 @@ export class BibleReferencePickerV2 {
               <ul>
                 <li class="listheader">Select Book</li>
                 {this.books.map((item) => {
-                  return <li onClick={() => this.selectBook(item, true)}>{item.CanonicalName}</li>
+                  return <li onClick={() => {
+                    this.selectBook(item, true);
+                    this.inputElement.focus();
+                  }}>{item.CanonicalName}</li>
                 })}
               </ul>
           </div>
           <div class={{'show': this.availableNumbers.length > 0, 'result-box': true}}>
             <ul>
               {
+
                 this.step == ReferencePickerState.Chapter ? (
-                  <li class="listheader">Select Chapter</li>
+                  <li class="listheader">Select {this.isEnd ? 'Ending' : 'Starting'} Chapter</li>
                 ) : (
-                  <li class="listheader">Select Verse</li>
+                  <li class="listheader">Select {this.isEnd ? 'Ending' : 'Starting'} Verse</li>
                 )
               }
               {
                 this.availableNumbers.map((number) => {
-                  return <li onClick={() => this.selectNumber(number)}>{number}</li>
+                  return <li onClick={() => {
+                    this.selectNumber(number);
+                    this.inputElement.focus();
+                  }}>{number}</li>
                 })
               }
             </ul>
