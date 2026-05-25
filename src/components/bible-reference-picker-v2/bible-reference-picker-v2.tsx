@@ -1,4 +1,4 @@
-import { Component, Host, State, h } from '@stencil/core';
+import { Component, Host, State, Prop, Event, EventEmitter, h } from '@stencil/core';
 import { BibleBookInfo, BibleBooks, BibleChapter } from '@soli-deo-gloria-software/bible-books'
 import { BibleParser, BibleReference, RawBibleParseResult} from '@soli-deo-gloria-software/bible-reference-finder'
 import { ReferencePickerState } from '../../utils/enums';
@@ -14,6 +14,7 @@ export class BibleReferencePickerV2 {
   @State() books: BibleBookInfo[] = [];
   @State() step: ReferencePickerState = ReferencePickerState.Book;
   @State() availableNumbers: number[] = [];
+  @Prop() maxNumberOfReferences:number = 1;
   selectedBook: BibleBookInfo | undefined;
   allowedRegex: RegExp | undefined;
   alphaNumericRegex: RegExp = /[A-Za-z0-9: \-]/
@@ -21,9 +22,14 @@ export class BibleReferencePickerV2 {
   inputElement!: HTMLElement;
   @State() references: BibleReference[] = [];
   isEnd: boolean = false;
-  //TODO: Output BibleBookReference[] with a max count specified by an input.
+
+  @Event() referencesUpdated!: EventEmitter<BibleReference[]>;
 
   handlePaste = (event: ClipboardEvent) => {
+    if (this.references?.length >= this.maxNumberOfReferences) {
+      event.preventDefault();
+    }
+    
     console.log('paste event' + event.clipboardData?.types)
     if (event.clipboardData == undefined) {
       return;
@@ -50,21 +56,23 @@ export class BibleReferencePickerV2 {
     }
 
     let references: BibleReference[] = [...this.references]
-    //TODO: clean up - only accept up to the configured number of reference.
     parsed.forEach(collection => {
       collection.BibleReferences.forEach(reference => {
-        references.push(reference);
+        if (references.length < this.maxNumberOfReferences) {
+          references.push(reference);
+        }
       })
     })
 
     if (references.length > 0) {
       this.references = [...references];
-      return true;
     } else {
       this.value = text;
     }
 
-    return false;
+    this.referencesUpdated.emit(this.references);
+
+    return this.references.length > 0;
   }
 
   textChange = (event: InputEvent) => {
@@ -120,6 +128,10 @@ export class BibleReferencePickerV2 {
   }
 
   handleKeyPress = (event: KeyboardEvent) => {
+    if (this.references?.length >= this.maxNumberOfReferences) {
+      event.preventDefault();
+    }
+
     if (event.key == "Backspace") { // Handle chapter/verse deletion
       if (this.selectedBook && this.value.length < this.selectBook.name.length) {
         if (this.value.length < this.selectBook.name.length) {
@@ -147,11 +159,13 @@ export class BibleReferencePickerV2 {
         event.preventDefault();
         this.resetReferenceBuilder();
       }
-    } //else if (this.alphaNumericRegex.test(event.key)) { //Note: This doesn't work correctly. Need a better way to detect special keys.
-      //if (this.allowedRegex && !this.allowedRegex.test(event.key)){ //Block text change event.
-       // event.preventDefault(); //TODO: Invalid text indicator.
-      //}
-    //}
+    } else if (!this.alphaNumericRegex.test(event.key)) {
+      console.log('failed valid key test')
+      event.preventDefault();
+      // if (this.allowedRegex && !this.allowedRegex.test(event.key)){ //Block text change event.
+      //  event.preventDefault(); //TODO: Invalid text indicator.
+      // }
+    }
   }
 
   resetReferenceBuilder = (preserveValue?: boolean) => {
@@ -187,7 +201,7 @@ export class BibleReferencePickerV2 {
   loadChapters = (book: BibleBookInfo, startChapter?: number) => {
     this.availableNumbers = this.getChapters(book, startChapter)
     this.step = ReferencePickerState.Chapter;
-    // Think about number of decimals allowed. For instance, most chapters only have double digit chapterss and none have 4 digits, so 1111 is invalid...
+    // Think about number of digits allowed. For instance, most chapters only have double digit chapterss and none have 4 digits, so 1111 is invalid...
     this.allowedRegex = new RegExp(/^[\d:\-]$/g); //Untested: only allow numbers optionally ending with : or -.
   }
 
@@ -200,7 +214,7 @@ export class BibleReferencePickerV2 {
     startVerse ??= 1;
     this.availableNumbers = this.createArray(startVerse, chapter.VerseCount);
     this.step = ReferencePickerState.Verse;
-    // Think about number of decimals allowed. For instance, most chapters only have double digit versess and none have 4 digits, so 1111 is invalid...
+    // Think about number of digits allowed. For instance, most chapters only have double digit versess and none have 4 digits, so 1111 is invalid...
     this.allowedRegex = new RegExp(/^[\d\-]$/g); //Untested: only allow numbers optionally ending with a dash for a range.
   }
 
@@ -216,7 +230,7 @@ export class BibleReferencePickerV2 {
     this.value += selectedNumber.toString();
     if (this.step == ReferencePickerState.Chapter) {
       let chapter = this.selectedBook!.Chapters.find(ch => ch.Number == selectedNumber);
-      this.loadVerses(chapter);
+      this.loadVerses(chapter!);
     } //TODO: Verses.
   }
 
@@ -242,7 +256,8 @@ export class BibleReferencePickerV2 {
                 autocomplete="off" 
                 onInput={(event) => this.textChange(event)} 
                 onPaste={(event) => this.handlePaste(event)} 
-                onKeyDown={(event) => this.handleKeyPress(event)}/>
+                onKeyDown={(event) => this.handleKeyPress(event)}
+                disabled={(this.references?.length ?? 0) >= this.maxNumberOfReferences}/>
           </div>
           <div class={{'show': this.books.length > 0, 'result-box':true}}>
               <ul>
