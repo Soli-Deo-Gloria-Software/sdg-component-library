@@ -229,13 +229,47 @@ export class BibleReferencePicker {
   selectNumber = (selectedNumber: number) => {
     this.value += selectedNumber.toString();
     if (this.step == ReferencePickerState.Chapter) {
+      this.value += ":"
       let chapter = this.selectedBook!.Chapters.find(ch => ch.Number == selectedNumber);
       this.loadVerses(chapter!);
-    } //TODO: Verses.
+    } else {
+      if (!this.isEnd) {
+        this.value += "-"; //TODO - test and build out.
+        let partial = this._parser.getSingleRawReference(this.selectedBook!, this.value);
+        let chapter = this.selectedBook!.Chapters.find(ch => ch.Number == partial[0].StartingChapter);
+        this.loadVerses(chapter!, selectedNumber);
+      } else {
+        this.handleReferenceSubmit(this.value);
+        this.resetReferenceBuilder();
+      }
+    }
   }
 
   removeReference(reference: BibleReference){
     this.references = this.references.filter(ref => ref.Canonical != reference.Canonical);
+  }
+
+  useWholeChapter = () => {
+    console.log('useWholeChapter');
+    let input = this.value;
+
+    if (input.endsWith(':')) {
+      input = input.substring(0, input.length - 1)
+      this.value = input;
+    }
+
+    if (this.isEnd){
+      this.handleReferenceSubmit(input);
+      this.resetReferenceBuilder();
+    }
+    else {
+      if (!input.endsWith('-')) {
+        input += '-';
+        this.value = input;
+      } 
+      console.log(`calling handler with input: ${input}`)
+      this.handleTextChange(input);
+    }
   }
 
   render() {
@@ -273,12 +307,22 @@ export class BibleReferencePicker {
           <div class={{'show': this.availableNumbers.length > 0, 'result-box': true}}>
             <ul>
               {
-
-                this.step == ReferencePickerState.Chapter ? (
-                  <li class="listheader">Select {this.isEnd ? 'Ending' : 'Starting'} Chapter</li>
-                ) : (
-                  <li class="listheader">Select {this.isEnd ? 'Ending' : 'Starting'} Verse</li>
-                )
+                this.isEnd ? 
+                <li class="listheader">
+                  Select Ending&nbsp;
+                  <span class={{'bg-primary': this.step == ReferencePickerState.Chapter, 'toggle-pill clickable': true}}>Chapter</span>&nbsp;
+                  <span class={{'bg-primary': this.step == ReferencePickerState.Verse, 'toggle-pill clickable':true}}>Verse</span> 
+                </li>
+                :
+                <li class="listheader">
+                  Select Starting {(this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse')}
+                </li>
+              }
+              {
+                (this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
+                  this.useWholeChapter();
+                  this.inputElement.focus();
+                }}>Use Entire Chapter</li> 
               }
               {
                 this.availableNumbers.map((number) => {

@@ -143,3 +143,4 @@ dist/
 .stencil/
 loader/
 .vscode
+*.d.ts
