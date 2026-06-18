@@ -55,19 +55,29 @@ export class BibleReferencePicker {
       return false;
     }
 
-    let references: BibleReference[] = [...this.references]
+    let referenceAdded: boolean = false;
     parsed.forEach(collection => {
-      collection.BibleReferences.forEach(reference => {
-        if (references.length < this.maxNumberOfReferences) {
+      referenceAdded = this.addReferences(collection.BibleReferences)
+    })
+
+    if (!referenceAdded) {
+      this.value = text;
+    }
+
+    return referenceAdded;
+  }
+
+  addReferences = (newReferences: BibleReference[]) : boolean => {
+    let references: BibleReference[] = [...this.references]
+
+    newReferences.forEach(reference => {
+      if (references.length < this.maxNumberOfReferences) {
           references.push(reference);
         }
-      })
     })
 
     if (references.length > 0) {
       this.references = [...references];
-    } else {
-      this.value = text;
     }
 
     this.referencesUpdated.emit(this.references);
@@ -98,8 +108,7 @@ export class BibleReferencePicker {
         }
       }
     } else {
-      let nonBookSegment = currentText.replace(this.selectedBook?.CanonicalName.toLowerCase() ?? '', '').trimStart();
-      this.incompleteReference = this._parser.getSingleRawReference(this.selectedBook!, nonBookSegment)[0];
+      this.incompleteReference = this.getPartialReference()!;
       if (this.incompleteReference.StartingChapter) {
         if (!this.incompleteReference.StartingVerse) {
           if (this.value.endsWith(":")) {
@@ -227,22 +236,96 @@ export class BibleReferencePicker {
   }
 
   selectNumber = (selectedNumber: number) => {
-    this.value += selectedNumber.toString();
-    if (this.step == ReferencePickerState.Chapter) {
-      this.value += ":"
-      let chapter = this.selectedBook!.Chapters.find(ch => ch.Number == selectedNumber);
-      this.loadVerses(chapter!);
-    } else {
-      if (!this.isEnd) {
-        this.value += "-"; //TODO - test and build out.
-        let partial = this._parser.getSingleRawReference(this.selectedBook!, this.value);
-        let chapter = this.selectedBook!.Chapters.find(ch => ch.Number == partial[0].StartingChapter);
-        this.loadVerses(chapter!, selectedNumber);
+    let partial = this.getPartialReference();
+    if (!partial) {
+      return; //TODO: Error
+    }
+
+    let step = this.getStepFromPartialReference(partial);
+    if (!step.isEnd) {
+      if (step.step == ReferencePickerState.Chapter) {
+        partial.StartingChapter = selectedNumber;
+        this.step = ReferencePickerState.Verse;
       } else {
-        this.handleReferenceSubmit(this.value);
-        this.resetReferenceBuilder();
+        partial.StartingVerse = selectedNumber;
+      }
+    } else {
+      if (step.step == ReferencePickerState.Chapter) {
+        partial.EndingChapter = selectedNumber;
+        this.step = ReferencePickerState.Verse
+      } else {
+        partial.EndingVerse = selectedNumber;
+        let full = new BibleReference(partial);
+        if (this.addReferences([full]))
+          this.resetReferenceBuilder();
+
+        return;
       }
     }
+
+    let text = `${partial.Book.CanonicalName} `;
+    
+    if (partial.Book.Chapters.length == 1) {
+      if (partial.StartingVerse) {
+        text += `${partial.StartingVerse}`;
+        if (partial.EndingVerse) {
+          text += `-${partial.EndingVerse}`;
+        }
+      }
+    } else {
+      if (partial.StartingChapter) {
+        text += `${partial.StartingChapter}:`;
+
+        if (partial.StartingVerse) {
+          text += `${partial.StartingVerse}-`;
+        }
+
+        if (partial.EndingChapter && partial.EndingChapter != partial.StartingChapter) {
+          text += `${partial.EndingChapter}:`;
+        } 
+        
+        if (partial.EndingVerse) {
+          text += `${partial.EndingVerse}`;
+        }
+      }
+    }
+
+    this.value = text;
+    this.handleTextChange(text);
+  }
+
+  private getStepFromPartialReference = (partial: RawBibleParseResult | undefined) : {step: ReferencePickerState, isEnd: boolean} => {
+    if (!partial) {
+      return {step: ReferencePickerState.Book, isEnd: false};
+    }
+
+    let isEnd = partial.EndingChapter != undefined || partial.EndingVerse != undefined || this.value.endsWith('-');
+
+    let step = ReferencePickerState.Chapter;
+    if (!isEnd) {
+      if (partial.StartingChapter) {
+        step = ReferencePickerState.Verse;
+      }
+    } else {
+      if (partial.EndingChapter) {
+        step = ReferencePickerState.Verse;
+      }
+    }
+
+    return {step: step, isEnd: isEnd};
+  }
+
+  private getPartialReference = () : RawBibleParseResult | undefined => {
+    if (!this.selectedBook)
+      return undefined;
+
+    let nonBookSegment = this.value.toLowerCase().replace(this.selectedBook?.CanonicalName.toLowerCase() ?? '', '').trimStart()
+    let partial = this._parser.getSingleRawReference(this.selectedBook!, nonBookSegment);
+    if (!partial || partial.length == 0) {
+      return undefined;
+    }
+
+    return partial[0];
   }
 
   removeReference(reference: BibleReference){
