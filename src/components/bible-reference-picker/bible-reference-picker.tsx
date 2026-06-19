@@ -100,7 +100,7 @@ export class BibleReferencePicker {
 
     currentText = currentText.toLowerCase().replaceAll('  ', ' ').trimEnd();
     if (this.step == ReferencePickerState.Book){
-      if (currentText && currentText.length > 1) {
+      if (currentText && currentText.length > 0) {
         this.books = BibleBooks.filter(book => book.Name.toLowerCase().includes(currentText));
         if (this.books.length == 1){
           let exactMatch= this.books[0].Name.toLowerCase() == currentText
@@ -297,13 +297,13 @@ export class BibleReferencePicker {
         text += `${partial.StartingChapter}`;
 
         if (partial.StartingVerse) {
-          text += `:${partial.StartingVerse}`;
+          text += `:${partial.StartingVerse}-`;
         } else if (!partial.EndingChapter) {
           text += ':'
         }
 
         if (partial.EndingChapter && partial.EndingChapter != partial.StartingChapter) {
-          text += `-${partial.EndingChapter}:`;
+          text += `${partial.EndingChapter}:`;
         } 
         
         if (partial.EndingVerse) {
@@ -410,7 +410,7 @@ export class BibleReferencePicker {
           </div>
           <div class={{'show': this.availableNumbers.length > 0, 'result-box': true}}>
             <ul class="listheader">
-              <li class="listheader">
+              <li>
                 Select {this.isEnd ? 'Ending' : 'Starting'} {(this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse')}
               </li>
             </ul>

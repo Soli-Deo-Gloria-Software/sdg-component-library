@@ -31,18 +31,21 @@
     margin: 0;
 }
 
+.search-box .result-box ul li {
+    padding: 5px 10px;
+    list-style: none;
+}
+
 .search-box .result-box ul:not(.listheader) {
     padding: 5px 10px;
 }
 
-.search-box .result-box ul li:not(.listheader) {
-    list-style: none;
+.search-box .result-box ul:not(.listheader) li {
     border-radius: 3px;
-    padding: 5px 10px;
     cursor: pointer;
 }
 
-.search-box .result-box ul li:not(.listheader):hover {
+.search-box .result-box ulul:not(.listheader) li:hover {
     background-color: #ccc;
 }
 
