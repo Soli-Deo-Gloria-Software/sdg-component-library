@@ -15,6 +15,7 @@ export class BibleReferencePicker {
   @State() step: ReferencePickerState = ReferencePickerState.Book;
   @State() availableNumbers: number[] = [];
   @Prop() maxNumberOfReferences:number = 1;
+  allNumbersForStep: number[] = [];
   selectedBook: BibleBookInfo | undefined;
   allowedRegex: RegExp | undefined;
   alphaNumericRegex: RegExp = /[A-Za-z0-9: \-]/
@@ -116,19 +117,32 @@ export class BibleReferencePicker {
           } else if (this.value.endsWith("-")){
             this.isEnd = true;
             this.loadChapters(this.selectedBook!, this.incompleteReference.StartingChapter + 1);
+          } else {
+            let chapterSegment = this.isEnd ? this.incompleteReference.EndingChapter : this.incompleteReference.StartingChapter;
+            let filtered = this.filterNumbers(chapterSegment?.toString() ?? '');
+            if (filtered && filtered.length > 0) {
+              this.availableNumbers = [...filtered]
+            }
           }
         } else {
           //Verse is set here.
           if (this.value.endsWith("-")){
             this.isEnd = true;
             this.loadVerses(this.selectedBook!.Chapters[this.incompleteReference.StartingChapter-1], this.incompleteReference.StartingVerse + 1)
+          } else {
+            let verseSegment = this.isEnd ? this.incompleteReference.EndingVerse : this.incompleteReference.StartingVerse;
+            let filtered = this.filterNumbers(verseSegment?.toString() ?? '');
+            if (filtered && filtered.length > 0) {
+              this.availableNumbers = [...filtered]
+            }
           }
         }
       } 
     }
   }
 
-  filterNumbers = (text: string, sourceNumbers: number[]):number[] => {
+  filterNumbers = (text: string, sourceNumbers?: number[]):number[] => {
+    sourceNumbers = sourceNumbers ?? [...this.allNumbersForStep]
     text = text.trim();
     if (!text) {
       return sourceNumbers;
@@ -183,6 +197,7 @@ export class BibleReferencePicker {
       }
       this.books = [];
       this.availableNumbers = [];
+      this.allNumbersForStep = [];
       this.step = ReferencePickerState.Book;
       this.selectedBook = undefined;
       this.allowedRegex = undefined;
@@ -208,7 +223,8 @@ export class BibleReferencePicker {
   }
 
   loadChapters = (book: BibleBookInfo, startChapter?: number) => {
-    this.availableNumbers = this.getChapters(book, startChapter)
+    this.allNumbersForStep = this.getChapters(book, startChapter);
+    this.availableNumbers = [...this.allNumbersForStep];
     this.step = ReferencePickerState.Chapter;
     // Think about number of digits allowed. For instance, most chapters only have double digit chapterss and none have 4 digits, so 1111 is invalid...
     this.allowedRegex = new RegExp(/^[\d:\-]$/g); //Untested: only allow numbers optionally ending with : or -.
@@ -221,7 +237,8 @@ export class BibleReferencePicker {
 
   loadVerses = (chapter: BibleChapter, startVerse?: number) => {
     startVerse ??= 1;
-    this.availableNumbers = this.createArray(startVerse, chapter.VerseCount);
+    this.allNumbersForStep = this.createArray(startVerse, chapter.VerseCount);
+    this.availableNumbers = [...this.allNumbersForStep]
     this.step = ReferencePickerState.Verse;
     // Think about number of digits allowed. For instance, most chapters only have double digit versess and none have 4 digits, so 1111 is invalid...
     this.allowedRegex = new RegExp(/^[\d\-]$/g); //Untested: only allow numbers optionally ending with a dash for a range.
@@ -246,6 +263,7 @@ export class BibleReferencePicker {
       if (step.step == ReferencePickerState.Chapter) {
         partial.StartingChapter = selectedNumber;
         this.step = ReferencePickerState.Verse;
+        this.loadVerses(this.selectedBook!.Chapters[selectedNumber-1])
       } else {
         partial.StartingVerse = selectedNumber;
       }
@@ -253,6 +271,7 @@ export class BibleReferencePicker {
       if (step.step == ReferencePickerState.Chapter) {
         partial.EndingChapter = selectedNumber;
         this.step = ReferencePickerState.Verse
+        this.loadVerses(this.selectedBook!.Chapters[selectedNumber-1], partial.StartingVerse)
       } else {
         partial.EndingVerse = selectedNumber;
         let full = new BibleReference(partial);
@@ -307,7 +326,7 @@ export class BibleReferencePicker {
         step = ReferencePickerState.Verse;
       }
     } else {
-      if (partial.EndingChapter) {
+      if (partial.StartingVerse || partial.EndingChapter) {
         step = ReferencePickerState.Verse;
       }
     }
@@ -402,7 +421,7 @@ export class BibleReferencePicker {
                 </li>
               }
               {
-                (this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
+                (this.isEnd || this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
                   this.useWholeChapter();
                   this.inputElement.focus();
                 }}>Use Entire Chapter</li> 
