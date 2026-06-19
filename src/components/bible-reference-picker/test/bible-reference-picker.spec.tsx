@@ -1,7 +1,7 @@
 import { newSpecPage } from '@stencil/core/testing';
 import { BibleReferencePicker } from '../bible-reference-picker';
 
-describe('bible-reference-picker', () => {
+describe('bible-reference-picker-v2', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [BibleReferencePicker],
