@@ -6,7 +6,7 @@ import { ReferencePickerState } from '../../utils/enums';
 @Component({
   tag: 'bible-reference-picker',
   styleUrl: 'bible-reference-picker.css',
-  shadow: true,
+  scoped: true,
 })
 export class BibleReferencePicker {
   private _parser = new BibleParser();
@@ -15,6 +15,7 @@ export class BibleReferencePicker {
   @State() step: ReferencePickerState = ReferencePickerState.Book;
   @State() availableNumbers: number[] = [];
   @Prop() maxNumberOfReferences:number = 1;
+
   allNumbersForStep: number[] = [];
   selectedBook: BibleBookInfo | undefined;
   allowedRegex: RegExp | undefined;
@@ -380,26 +381,25 @@ export class BibleReferencePicker {
     return (
       <Host>
         <div class="search-box">
-          <div class="reference-box">
+          <span class="reference-box">
             { this.references.map(reference => {
               return <span class="reference">{reference.Canonical} &nbsp; <span class="clickable" onClick={() => this.removeReference(reference)}>| &nbsp; &times; &nbsp;</span></span>
             })}
-          </div>
-          <div class="row">
-              <input type="text" name="input" 
-                ref={(el) => (this.inputElement = el as HTMLInputElement)}
-                value={this.value} 
-                id="input" 
-                placeholder="Scripture Reference" 
-                autocomplete="off" 
-                onInput={(event) => this.textChange(event)} 
-                onPaste={(event) => this.handlePaste(event)} 
-                onKeyDown={(event) => this.handleKeyPress(event)}
-                disabled={(this.references?.length ?? 0) >= this.maxNumberOfReferences}/>
-          </div>
+          </span>
+            <input type="text" name="input" 
+              ref={(el) => (this.inputElement = el as HTMLInputElement)}
+              value={this.value} 
+              id="input" 
+              placeholder="Scripture Reference" 
+              autocomplete="off" 
+              onInput={(event) => this.textChange(event)} 
+              onPaste={(event) => this.handlePaste(event)} 
+              onKeyDown={(event) => this.handleKeyPress(event)}
+              disabled={(this.references?.length ?? 0) >= this.maxNumberOfReferences}
+              />
           <div class={{'show': this.books.length > 0, 'result-box':true}}>
+            <ul class="listheader"><li>Select Book</li></ul>
               <ul>
-                <li class="listheader">Select Book</li>
                 {this.books.map((item) => {
                   return <li onClick={() => {
                     this.selectBook(item, true);
@@ -409,10 +409,12 @@ export class BibleReferencePicker {
               </ul>
           </div>
           <div class={{'show': this.availableNumbers.length > 0, 'result-box': true}}>
-            <ul>
+            <ul class="listheader">
               <li class="listheader">
                 Select {this.isEnd ? 'Ending' : 'Starting'} {(this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse')}
               </li>
+            </ul>
+            <ul>
               {
                 (this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
                   this.useWholeChapter();

@@ -1,65 +1,44 @@
-:host {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  display: block;
-  background-color: #262a2f;
-  color: #333;
-}
-
 .search-box {
-    width: 600px;
-    background-color: #fff;
-    margin: 200px auto 0;
-    border-radius: 5px;
+    background-color: transparent;
 }
 
-.row {
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-}
-
-.search-box input {
+ .search-box input {
     flex: 1;
-    height: 50px;
     background: transparent;
     border: 0;
     outline: 0;
-    font-size: 18px;
     color: #333;
-}
-
-.search-box button {
-    background: transparent;
-    border: 0;
-    outline: 0;
-    cursor: pointer;
-}
-
-.search-box ::placeholder {
-    color: #aaa;
-}
+    width: max-content;
+} 
 
 .search-box .result-box {
     display: none;
 }
 
 .search-box .result-box.show {
+    border-top: 1px solid #bbb;
     display: block;
-    max-height: 350px;
-    overflow-y: scroll;
+    font-size: 0.85em;
+}
+
+.search-box .result-box ul.listheader {
+    padding: 0 10px;
 }
 
 .search-box .result-box ul {
-    border-top: 1px solid #999;
-    padding: 15px 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 0;
+}
+
+.search-box .result-box ul:not(.listheader) {
+    padding: 5px 10px;
 }
 
 .search-box .result-box ul li:not(.listheader) {
     list-style: none;
     border-radius: 3px;
-    padding: 15px 10px;
+    padding: 5px 10px;
     cursor: pointer;
 }
 
@@ -70,9 +49,7 @@
 .listheader {
     list-style: none;
     border-radius: 3px;
-    padding: 0 10px;
-    font-size: 12px;
-    color:#333
+    padding: 0 10px 10px;
 }
 
 .clickable {
@@ -89,14 +66,4 @@
     padding: 3px;
     border-radius: 5px;
     margin: 0 5px;
-}
-
-.bg-primary {
-    background-color: cyan !important;
-}
-
-.toggle-pill {
-    padding: 0.3em 0.6em;
-    border-radius: 8px;
-    background-color: #ccc;
 }
