@@ -255,7 +255,7 @@ export class BibleReferencePicker {
   selectNumber = (selectedNumber: number) => {
     let partial = this.getPartialReference();
     if (!partial) {
-      return; //TODO: Error
+      return;
     }
 
     let step = this.getStepFromPartialReference(partial);
@@ -293,14 +293,16 @@ export class BibleReferencePicker {
       }
     } else {
       if (partial.StartingChapter) {
-        text += `${partial.StartingChapter}:`;
+        text += `${partial.StartingChapter}`;
 
         if (partial.StartingVerse) {
-          text += `${partial.StartingVerse}-`;
+          text += `:${partial.StartingVerse}`;
+        } else if (!partial.EndingChapter) {
+          text += ':'
         }
 
         if (partial.EndingChapter && partial.EndingChapter != partial.StartingChapter) {
-          text += `${partial.EndingChapter}:`;
+          text += `-${partial.EndingChapter}:`;
         } 
         
         if (partial.EndingVerse) {
@@ -408,20 +410,11 @@ export class BibleReferencePicker {
           </div>
           <div class={{'show': this.availableNumbers.length > 0, 'result-box': true}}>
             <ul>
+              <li class="listheader">
+                Select {this.isEnd ? 'Ending' : 'Starting'} {(this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse')}
+              </li>
               {
-                this.isEnd ? 
-                <li class="listheader">
-                  Select Ending&nbsp;
-                  <span class={{'bg-primary': this.step == ReferencePickerState.Chapter, 'toggle-pill clickable': true}}>Chapter</span>&nbsp;
-                  <span class={{'bg-primary': this.step == ReferencePickerState.Verse, 'toggle-pill clickable':true}}>Verse</span> 
-                </li>
-                :
-                <li class="listheader">
-                  Select Starting {(this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse')}
-                </li>
-              }
-              {
-                (this.isEnd || this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
+                (this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
                   this.useWholeChapter();
                   this.inputElement.focus();
                 }}>Use Entire Chapter</li> 
