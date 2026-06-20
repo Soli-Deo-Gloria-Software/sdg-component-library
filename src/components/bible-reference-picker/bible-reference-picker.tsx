@@ -383,7 +383,7 @@ export class BibleReferencePicker {
         <div class="search-box">
           <span class="reference-box">
             { this.references.map(reference => {
-              return <span class="reference">{reference.Canonical} &nbsp; <span class="clickable" onClick={() => this.removeReference(reference)}>| &nbsp; &times; &nbsp;</span></span>
+              return <span class="reference bg-light text-black">{reference.Canonical} &nbsp; <span class="clickable" onClick={() => this.removeReference(reference)}>| &nbsp; &times; &nbsp;</span></span>
             })}
           </span>
             <input type="text" name="input" 
@@ -426,7 +426,7 @@ export class BibleReferencePicker {
                   return <li onClick={() => {
                     this.selectNumber(number);
                     this.inputElement.focus();
-                  }}>{number}</li>
+                  }}>{this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse'} {number}</li>
                 })
               }
             </ul>
