@@ -300,6 +300,8 @@ export class BibleReferencePicker {
           text += `:${partial.StartingVerse}-`;
         } else if (!partial.EndingChapter) {
           text += ':'
+        } else {
+          text += '-'
         }
 
         if (partial.EndingChapter && partial.EndingChapter != partial.StartingChapter) {
