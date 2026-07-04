@@ -38,26 +38,3 @@ export declare interface BibleReferencePicker extends Components.BibleReferenceP
 }
 
 
-@ProxyCmp({
-  inputs: ['first', 'last', 'middle']
-})
-@Component({
-  selector: 'my-component',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: '<ng-content></ng-content>',
-  // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['first', 'last', 'middle'],
-  standalone: false
-})
-export class MyComponent {
-  protected el: HTMLMyComponentElement;
-  constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
-    c.detach();
-    this.el = r.nativeElement;
-  }
-}
-
-
-export declare interface MyComponent extends Components.MyComponent {}
-
-

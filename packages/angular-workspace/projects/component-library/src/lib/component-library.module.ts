@@ -1,6 +1,6 @@
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { DIRECTIVES } from './stencil-generated';
-import { defineCustomElement } from 'stencil-library/my-component';
+import { defineCustomElements } from 'stencil-library/loader';
 
 @NgModule({
   declarations: [...DIRECTIVES],
@@ -8,7 +8,7 @@ import { defineCustomElement } from 'stencil-library/my-component';
   providers: [
     {
       provide: APP_INITIALIZER,
-      useFactory: () => defineCustomElement,
+      useFactory: () => defineCustomElements,
       multi: true
     }
   ]

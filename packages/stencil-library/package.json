@@ -10,12 +10,13 @@
   "unpkg": "dist/stencil-library/stencil-library.esm.js",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/stencil-library/stencil-library.esm.js",
       "require": "./dist/stencil-library/stencil-library.cjs.js"
     },
-    "./my-component": {
-      "import": "./dist/components/my-component.js",
-      "types": "./dist/components/my-component.d.ts"
+    "./bible-reference-picker": {
+      "import": "./dist/components/bible-reference-picker.js",
+      "types": "./dist/components/bible-reference-picker.d.ts"
     },
     "./loader": {
       "import": "./loader/index.js",
