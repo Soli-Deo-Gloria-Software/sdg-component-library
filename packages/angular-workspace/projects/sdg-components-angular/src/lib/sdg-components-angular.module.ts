@@ -1,6 +1,6 @@
 import { APP_INITIALIZER, NgModule } from '@angular/core';
-import { DIRECTIVES } from './stencil-generated';
-import { defineCustomElements } from 'stencil-library/loader';
+import { DIRECTIVES } from './stencil-generated/index';
+import { defineCustomElements } from 'sdg-components/loader'
 
 @NgModule({
   declarations: [...DIRECTIVES],
@@ -12,5 +12,6 @@ import { defineCustomElements } from 'stencil-library/loader';
       multi: true
     }
   ]
+
 })
-export class ComponentLibraryModule {}
+export class SdgComponentsAngularModule {}

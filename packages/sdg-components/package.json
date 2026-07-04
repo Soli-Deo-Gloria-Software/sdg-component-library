@@ -1,18 +1,18 @@
 {
-  "name": "stencil-library",
+  "name": "sdg-components",
   "version": "0.0.1",
-  "description": "Stencil Component Starter",
+  "description": "Soli Deo Gloria Software Component Library",
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
   "types": "dist/types/index.d.ts",
   "collection": "dist/collection/collection-manifest.json",
   "collection:main": "dist/collection/index.js",
-  "unpkg": "dist/stencil-library/stencil-library.esm.js",
+  "unpkg": "dist/sdg-components/sdg-components.esm.js",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "import": "./dist/stencil-library/stencil-library.esm.js",
-      "require": "./dist/stencil-library/stencil-library.cjs.js"
+      "import": "./dist/sdg-components/sdg-components.esm.js",
+      "require": "./dist/sdg-components/sdg-components.cjs.js"
     },
     "./bible-reference-picker": {
       "import": "./dist/components/bible-reference-picker.js",
@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/stenciljs/component-starter.git"
+    "url": "https://github.com/Soli-Deo-Gloria-Software/sdg-component-library"
   },
   "files": [
     "dist/",

@@ -2,17 +2,17 @@ import { Config } from '@stencil/core';
 import { angularOutputTarget } from '@stencil/angular-output-target';
 
 export const config: Config = {
-  namespace: 'stencil-library',
+  namespace: 'sdg-components',
   outputTargets: [
     {
       type: 'dist',
       esmLoaderPath: '../loader',
     },
     angularOutputTarget({
-      componentCorePackage: 'stencil-library',
+      componentCorePackage: 'sdg-components',
       outputType: 'component',
-      directivesProxyFile: '../angular-workspace/projects/component-library/src/lib/stencil-generated/components.ts',
-      directivesArrayFile: '../angular-workspace/projects/component-library/src/lib/stencil-generated/index.ts',
+      directivesProxyFile: '../angular-workspace/projects/sdg-components-angular/src/lib/stencil-generated/components.ts',
+      directivesArrayFile: '../angular-workspace/projects/sdg-components-angular/src/lib/stencil-generated/index.ts',
     }),
     {
       type: 'dist-custom-elements',

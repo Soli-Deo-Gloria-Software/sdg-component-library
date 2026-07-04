@@ -4,7 +4,8 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "component-library": ["./dist/component-library"]
+      "sdg-components": ["./dist/sdg-components"],
+      "sdg-components-angular": ["./dist/sdg-components-angular"]
     },
     "strict": true,
     "noImplicitOverride": true,
@@ -27,16 +28,22 @@
   "files": [],
   "references": [
     {
-      "path": "./projects/component-library/tsconfig.lib.json"
+      "path": "./projects/sdg-components-angular/tsconfig.lib.json"
     },
     {
-      "path": "./projects/component-library/tsconfig.spec.json"
+      "path": "./projects/sdg-components-angular/tsconfig.spec.json"
     },
     {
       "path": "./projects/test-app/tsconfig.app.json"
     },
     {
       "path": "./projects/test-app/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/sdg-components-angular/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/sdg-components-angular/tsconfig.spec.json"
     }
   ]
 }

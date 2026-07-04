@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Even
 
 import { ProxyCmp } from './angular-component-lib/utils';
 
-import { Components } from 'stencil-library';
+import { Components } from 'sdg-components';
 
 
 @ProxyCmp({
@@ -29,8 +29,8 @@ export class BibleReferencePicker {
 }
 
 
-import type { BibleReferencePickerCustomEvent } from 'stencil-library';
-import type { BibleReference as IBibleReferencePickerBibleReference } from 'stencil-library';
+import type { BibleReferencePickerCustomEvent } from 'sdg-components';
+import type { BibleReference as IBibleReferencePickerBibleReference } from 'sdg-components';
 
 export declare interface BibleReferencePicker extends Components.BibleReferencePicker {
 
