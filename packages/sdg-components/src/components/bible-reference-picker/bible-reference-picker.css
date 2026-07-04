@@ -1,9 +1,11 @@
 .search-box {
     background-color: transparent;
+    /*display: flex;*/
 }
 
  .search-box input {
     flex: 1;
+    flex-grow: 1;
     background: transparent;
     border: 0;
     outline: 0;
@@ -60,7 +62,8 @@
 }
 
 .reference-box {
-    padding: 10px;
+    /*padding: 10px;*/
+    float:right;
 }
 
 .reference {
