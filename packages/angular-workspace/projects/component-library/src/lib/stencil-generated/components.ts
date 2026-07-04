@@ -1,0 +1,63 @@
+/* tslint:disable */
+/* auto-generated angular directive proxies */
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Output, NgZone } from '@angular/core';
+
+import { ProxyCmp } from './angular-component-lib/utils';
+
+import { Components } from 'stencil-library';
+
+
+@ProxyCmp({
+  inputs: ['maxNumberOfReferences']
+})
+@Component({
+  selector: 'bible-reference-picker',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: '<ng-content></ng-content>',
+  // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
+  inputs: ['maxNumberOfReferences'],
+  outputs: ['referencesUpdated'],
+  standalone: false
+})
+export class BibleReferencePicker {
+  protected el: HTMLBibleReferencePickerElement;
+  @Output() referencesUpdated = new EventEmitter<BibleReferencePickerCustomEvent<IBibleReferencePickerBibleReference[]>>();
+  constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
+    c.detach();
+    this.el = r.nativeElement;
+  }
+}
+
+
+import type { BibleReferencePickerCustomEvent } from 'stencil-library';
+import type { BibleReference as IBibleReferencePickerBibleReference } from 'stencil-library';
+
+export declare interface BibleReferencePicker extends Components.BibleReferencePicker {
+
+  referencesUpdated: EventEmitter<BibleReferencePickerCustomEvent<IBibleReferencePickerBibleReference[]>>;
+}
+
+
+@ProxyCmp({
+  inputs: ['first', 'last', 'middle']
+})
+@Component({
+  selector: 'my-component',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: '<ng-content></ng-content>',
+  // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
+  inputs: ['first', 'last', 'middle'],
+  standalone: false
+})
+export class MyComponent {
+  protected el: HTMLMyComponentElement;
+  constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
+    c.detach();
+    this.el = r.nativeElement;
+  }
+}
+
+
+export declare interface MyComponent extends Components.MyComponent {}
+
+
