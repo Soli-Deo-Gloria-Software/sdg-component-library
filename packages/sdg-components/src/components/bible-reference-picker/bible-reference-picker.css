@@ -1,11 +1,15 @@
 .search-box {
     background-color: transparent;
-    /*display: flex;*/
+    display: block;
 }
 
- .search-box input {
+.flex-wrap {
+    display: flex;
+}
+
+.search-box input {
     flex: 1;
-    flex-grow: 1;
+    min-width: 0;
     background: transparent;
     border: 0;
     outline: 0;
@@ -13,13 +17,18 @@
     width: max-content;
 } 
 
+.search-box input:disabled {
+    cursor: not-allowed;
+}
+
 .search-box .result-box {
     display: none;
+    width: 100%;
 }
 
 .search-box .result-box.show {
     border-top: 1px solid #bbb;
-    display: block;
+    display: inline-block;
     font-size: 0.85em;
 }
 
@@ -62,8 +71,8 @@
 }
 
 .reference-box {
-    /*padding: 10px;*/
-    float:right;
+    flex-shrink: 0;
+    align-self:flex-end;
 }
 
 .reference {

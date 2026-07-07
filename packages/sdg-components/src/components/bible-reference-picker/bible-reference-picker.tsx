@@ -383,6 +383,7 @@ export class BibleReferencePicker {
     return (
       <Host>
         <div class="search-box">
+          <div class="flex-wrap">
             <input type="text" name="input" 
               ref={(el) => (this.inputElement = el as HTMLInputElement)}
               value={this.value} 
@@ -394,11 +395,12 @@ export class BibleReferencePicker {
               onKeyDown={(event) => this.handleKeyPress(event)}
               disabled={(this.references?.length ?? 0) >= this.maxNumberOfReferences}
             />
-          <span class="reference-box">
-            { this.references.map(reference => {
-              return <span class="reference bg-light text-black">{reference.Canonical} &nbsp; <span class="clickable" onClick={() => this.removeReference(reference)}>| &nbsp; &times; &nbsp;</span></span>
-            })}
-          </span>
+            <span class="reference-box">
+              { this.references.map(reference => {
+                return <span class="reference bg-light text-black">{reference.Canonical} &nbsp; <span class="clickable" onClick={() => this.removeReference(reference)}>| &nbsp; &times; &nbsp;</span></span>
+              })}
+            </span>
+          </div>
           <div class={{'show': this.books.length > 0, 'result-box':true}}>
             <ul class="listheader"><li>Select Book</li></ul>
               <ul>
