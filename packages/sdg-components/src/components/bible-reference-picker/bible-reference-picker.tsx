@@ -1,18 +1,19 @@
-import { Component, Host, State, Prop, Event, EventEmitter, h } from '@stencil/core';
+import { Component, Host, State, Prop, Event, EventEmitter, h, Listen, Element } from '@stencil/core';
 import { BibleBookInfo, BibleBooks, BibleChapter } from '@soli-deo-gloria-software/bible-books'
 import { BibleParser, BibleReference, RawBibleParseResult} from '@soli-deo-gloria-software/bible-reference-finder'
 import { ReferencePickerState } from '../../utils/enums';
-import { MultiselectItem } from '../multiselect-item/multiselect-item';
 
 @Component({
   tag: 'bible-reference-picker',
   styleUrl: 'bible-reference-picker.css',
+  styleUrls: ['../../shared-styles.css'],
   scoped: true,
 })
 export class BibleReferencePicker {
   private _parser = new BibleParser();
   @State() value: string = '';
   @State() books: BibleBookInfo[] = [];
+  @State() isOpen: boolean = false;
   @State() step: ReferencePickerState = ReferencePickerState.Book;
   @State() availableNumbers: number[] = [];
   @Prop() maxNumberOfReferences:number = 1;
@@ -28,6 +29,19 @@ export class BibleReferencePicker {
 
   @Event() referencesUpdated!: EventEmitter<BibleReference[]>;
 
+  @Element() thisElement!: HTMLElement;
+  @Listen('click', { target: 'window' })
+  handleWindowClick(ev: MouseEvent) {
+    const path = ev.composedPath();
+
+    const clickedInside = path.includes(this.thisElement);
+
+    if (!clickedInside && this.isOpen) {
+      this.isOpen = false;
+      console.log('Clicked outside the component!');
+    }
+  }
+  
   handlePaste = (event: ClipboardEvent) => {
     if (this.references?.length >= this.maxNumberOfReferences) {
       event.preventDefault();
@@ -65,6 +79,8 @@ export class BibleReferencePicker {
 
     if (!referenceAdded) {
       this.value = text;
+    } else {
+      this.isOpen = false;
     }
 
     return referenceAdded;
@@ -75,8 +91,9 @@ export class BibleReferencePicker {
 
     newReferences.forEach(reference => {
       if (references.length < this.maxNumberOfReferences) {
-          references.push(reference);
-        }
+        if (!references.some(ref => ref.Canonical == reference.Canonical))
+        references.push(reference);
+      }
     })
 
     if (references.length > 0) {
@@ -92,6 +109,15 @@ export class BibleReferencePicker {
     let input = (event.target as any).value;
     this.value = input;
     this.handleTextChange(input.toLowerCase());
+  }
+
+  onFocus = () => {
+    if (this.value) {
+      this.handleTextChange(this.value);
+    } else {
+      this.books = [...BibleBooks];
+    }
+    this.isOpen = true;
   }
 
   handleTextChange(currentText: string, autocomplete?: boolean) {
@@ -177,8 +203,12 @@ export class BibleReferencePicker {
       this.resetReferenceBuilder();
       event.preventDefault();
     } else if (event.key == "Tab") { //Complete current step
-      this.handleTextChange(this.value, true);
-      event.preventDefault();
+      if (this.value) {
+        this.handleTextChange(this.value, true);
+        event.preventDefault();
+      } else {
+        return;
+      }
     } else if (event.key == "Enter" || event.key == ";") { // Parse reference
       if (this.handleReferenceSubmit(this.value)) {
         event.preventDefault();
@@ -197,7 +227,7 @@ export class BibleReferencePicker {
       if (!preserveValue) {
         this.value = '';
       }
-      this.books = [];
+      this.books = [...BibleBooks];
       this.availableNumbers = [];
       this.allNumbersForStep = [];
       this.step = ReferencePickerState.Book;
@@ -384,7 +414,7 @@ export class BibleReferencePicker {
     return (
       <Host>
         <div class="search-box">
-          <div class="flex-wrap">
+          <div class="flex">
             <input type="text" name="input" 
               ref={(el) => (this.inputElement = el as HTMLInputElement)}
               value={this.value} 
@@ -395,15 +425,17 @@ export class BibleReferencePicker {
               onPaste={(event) => this.handlePaste(event)} 
               onKeyDown={(event) => this.handleKeyPress(event)}
               disabled={(this.references?.length ?? 0) >= this.maxNumberOfReferences}
+              onFocus={() => this.onFocus()}
             />
             <span class="reference-box">
               { this.references.map(reference => {
-                return <MultiselectItem itemReference={reference} removeItem={() => this.removeReference(reference)}>{reference.Canonical}</MultiselectItem>
+                return <multiselect-item itemReference={reference} onRemoveItem={() => this.removeReference(reference)}>{reference.Canonical}</multiselect-item>
               })}
             </span>
           </div>
-          <div class={{'show': this.books.length > 0, 'result-box':true}}>
-            <ul class="listheader"><li>Select Book</li></ul>
+          <div class={{'show': this.isOpen, 'result-box':true}}>
+            <div class={{'hide' : this.step != ReferencePickerState.Book}}>
+              <ul class="listheader"><li>Select Book</li></ul>
               <ul>
                 {this.books.map((item) => {
                   return <li onClick={() => {
@@ -412,30 +444,32 @@ export class BibleReferencePicker {
                   }}>{item.CanonicalName}</li>
                 })}
               </ul>
-          </div>
-          <div class={{'show': this.availableNumbers.length > 0, 'result-box': true}}>
-            <ul class="listheader">
-              <li>
-                Select {this.isEnd ? 'Ending' : 'Starting'} {(this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse')}
-              </li>
-            </ul>
-            <ul>
-              {
-                (this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
-                  this.useWholeChapter();
-                  this.inputElement.focus();
-                }}>Use Entire Chapter</li> 
-              }
-              {
-                this.availableNumbers.map((number) => {
-                  return <li onClick={() => {
-                    this.selectNumber(number);
+            </div>
+            <div class={{'hide': this.availableNumbers.length <= 0}}>
+              <ul class="listheader">
+                <li>
+                  Select {this.isEnd ? 'Ending' : 'Starting'} {(this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse')}
+                </li>
+              </ul>
+              <ul>
+                {
+                  (this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
+                    this.useWholeChapter();
                     this.inputElement.focus();
-                  }}>{this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse'} {number}</li>
-                })
-              }
-            </ul>
+                  }}>Use Entire Chapter</li> 
+                }
+                {
+                  this.availableNumbers.map((number) => {
+                    return <li onClick={() => {
+                      this.selectNumber(number);
+                      this.inputElement.focus();
+                    }}>{this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse'} {number}</li>
+                  })
+                }
+              </ul>
+            </div>
           </div>
+          
         </div>
       </Host>
     );

@@ -3,7 +3,7 @@
     display: block;
 }
 
-.flex-wrap {
+.flex {
     display: flex;
 }
 
@@ -27,6 +27,7 @@
 }
 
 .search-box .result-box.show {
+    margin-top: 3px;
     border-top: 1px solid #bbb;
     display: inline-block;
     font-size: 0.85em;
@@ -66,11 +67,11 @@
     padding: 0 10px 10px;
 }
 
-.clickable {
-    cursor: pointer;
-}
-
 .reference-box {
     flex-shrink: 0;
     align-self:flex-end;
+}
+
+.hide {
+    display: none;
 }

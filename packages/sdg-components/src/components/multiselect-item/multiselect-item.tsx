@@ -3,7 +3,8 @@ import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
 @Component({
   tag: 'multiselect-item',
   styleUrl: 'multiselect-item.css',
-  shadow: true,
+  styleUrls: ['../../shared-styles.css'],
+  scoped: true,
 })
 export class MultiselectItem {
   @Prop() itemReference: any;
