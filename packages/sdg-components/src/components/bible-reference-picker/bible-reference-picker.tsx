@@ -2,6 +2,7 @@ import { Component, Host, State, Prop, Event, EventEmitter, h } from '@stencil/c
 import { BibleBookInfo, BibleBooks, BibleChapter } from '@soli-deo-gloria-software/bible-books'
 import { BibleParser, BibleReference, RawBibleParseResult} from '@soli-deo-gloria-software/bible-reference-finder'
 import { ReferencePickerState } from '../../utils/enums';
+import { MultiselectItem } from '../multiselect-item/multiselect-item';
 
 @Component({
   tag: 'bible-reference-picker',
@@ -397,7 +398,7 @@ export class BibleReferencePicker {
             />
             <span class="reference-box">
               { this.references.map(reference => {
-                return <span class="reference bg-light text-black">{reference.Canonical} &nbsp; <span class="clickable" onClick={() => this.removeReference(reference)}>| &nbsp; &times; &nbsp;</span></span>
+                return <MultiselectItem itemReference={reference} removeItem={() => this.removeReference(reference)}>{reference.Canonical}</MultiselectItem>
               })}
             </span>
           </div>

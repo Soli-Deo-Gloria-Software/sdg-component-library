@@ -38,3 +38,33 @@ export declare interface BibleReferencePicker extends Components.BibleReferenceP
 }
 
 
+@ProxyCmp({
+  inputs: ['itemReference']
+})
+@Component({
+  selector: 'multiselect-item',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: '<ng-content></ng-content>',
+  // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
+  inputs: ['itemReference'],
+  outputs: ['removeItem'],
+  standalone: false
+})
+export class MultiselectItem {
+  protected el: HTMLMultiselectItemElement;
+  @Output() removeItem = new EventEmitter<MultiselectItemCustomEvent<any>>();
+  constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
+    c.detach();
+    this.el = r.nativeElement;
+  }
+}
+
+
+import type { MultiselectItemCustomEvent } from 'sdg-components';
+
+export declare interface MultiselectItem extends Components.MultiselectItem {
+
+  removeItem: EventEmitter<MultiselectItemCustomEvent<any>>;
+}
+
+

@@ -2,5 +2,6 @@
 import * as d from './components';
 
 export const DIRECTIVES = [
-  d.BibleReferencePicker
+  d.BibleReferencePicker,
+  d.MultiselectItem
 ];
