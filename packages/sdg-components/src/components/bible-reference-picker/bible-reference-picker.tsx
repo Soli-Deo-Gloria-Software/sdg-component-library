@@ -79,8 +79,6 @@ export class BibleReferencePicker {
 
     if (!referenceAdded) {
       this.value = text;
-    } else {
-      this.isOpen = false;
     }
 
     return referenceAdded;
@@ -96,13 +94,17 @@ export class BibleReferencePicker {
       }
     })
 
-    if (references.length > 0) {
+    let count = references.length;
+    if (count > 0) {
       this.references = [...references];
+      if (count >= this.maxNumberOfReferences){
+        this.isOpen = false;
+      }
     }
 
     this.referencesUpdated.emit(this.references);
 
-    return this.references.length > 0;
+    return count > 0;
   }
 
   textChange = (event: InputEvent) => {
@@ -455,14 +457,18 @@ export class BibleReferencePicker {
                 {
                   (this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
                     this.useWholeChapter();
-                    this.inputElement.focus();
+                    if (this.isOpen) {
+                      this.inputElement.focus();
+                    }
                   }}>Use Entire Chapter</li> 
                 }
                 {
                   this.availableNumbers.map((number) => {
                     return <li onClick={() => {
                       this.selectNumber(number);
-                      this.inputElement.focus();
+                      if (this.isOpen) {
+                        this.inputElement.focus();
+                      }
                     }}>{this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse'} {number}</li>
                   })
                 }
