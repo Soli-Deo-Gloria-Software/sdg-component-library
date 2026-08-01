@@ -436,6 +436,16 @@ export class BibleReferencePicker {
             </span>
           </div>
           <div class={{'show': this.isOpen, 'result-box':true}}>
+            <ul class={{'hide': this.value == '', 'listheader': true}}>
+              <li class="flex">
+                <span class="flex-1">{this.value}</span>
+                <i class="icon circle-check bg-success clickable" title="submit" onClick={() => {
+                  this.handleReferenceSubmit(this.value);
+                  this.resetReferenceBuilder();
+                  }}
+                ></i>
+              </li>
+            </ul>
             <div class={{'hide' : this.step != ReferencePickerState.Book}}>
               <ul class="listheader"><li>Select Book</li></ul>
               <ul>
@@ -455,7 +465,7 @@ export class BibleReferencePicker {
               </ul>
               <ul>
                 {
-                  (this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
+                  (this.step == ReferencePickerState.Chapter && !this.isEnd) ? '' : <li onClick={() => {
                     this.useWholeChapter();
                     if (this.isOpen) {
                       this.inputElement.focus();
