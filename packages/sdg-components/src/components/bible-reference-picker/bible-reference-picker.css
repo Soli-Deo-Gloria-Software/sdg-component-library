@@ -1,6 +1,14 @@
+:host {
+    display: block;
+    width: 100%;
+    min-width: 0;
+}
+
 .search-box {
     background-color: transparent;
     display: block;
+    width: 100%;
+    min-width: 0;
 }
 
 .flex {
@@ -8,18 +16,27 @@
 }
 
 .flex .flex-1 {
-    flex:1;
+    flex: 1;
+    min-width: 0;
+}
+
+.search-box > .flex {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    width: 100%;
+    min-width: 0;
 }
 
 .search-box input {
-    flex: 1;
+    flex: 1 1 0;
     min-width: 0;
     background: transparent;
     border: 0;
     outline: 0;
     color: #333;
-    width: max-content;
-} 
+    width: auto;
+}
 
 .search-box input:disabled {
     cursor: not-allowed;
@@ -28,12 +45,13 @@
 .search-box .result-box {
     display: none;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .search-box .result-box.show {
     margin-top: 3px;
     border-top: 1px solid #bbb;
-    display: inline-block;
+    display: block;
     font-size: 0.85em;
 }
 
@@ -43,12 +61,20 @@
 
 .search-box .result-box ul.listheader li.flex {
     gap: 4px;
+    align-items: center;
+}
+
+.search-box .result-box ul.listheader li.flex .flex-1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .search-box .result-box ul {
-    max-height: 300px;
+    max-height: min(300px, 50vh);
     overflow-y: auto;
     margin: 0;
+    -webkit-overflow-scrolling: touch;
 }
 
 .search-box .result-box ul li {
@@ -65,7 +91,7 @@
     cursor: pointer;
 }
 
-.search-box .result-box ulul:not(.listheader) li:hover {
+.search-box .result-box ul:not(.listheader) li:hover {
     background-color: #ccc;
 }
 
@@ -76,10 +102,32 @@
 }
 
 .reference-box {
-    flex-shrink: 0;
-    align-self:flex-end;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+    max-width: 100%;
 }
 
 .hide {
     display: none;
+}
+
+@media (max-width: 480px) {
+    .search-box > .flex {
+        gap: 6px;
+    }
+
+    .search-box .result-box ul:not(.listheader) li {
+        padding: 10px;
+    }
+}
+
+@media (pointer: coarse) {
+    .search-box .result-box ul:not(.listheader) li {
+        min-height: 2.75rem;
+        display: flex;
+        align-items: center;
+    }
 }

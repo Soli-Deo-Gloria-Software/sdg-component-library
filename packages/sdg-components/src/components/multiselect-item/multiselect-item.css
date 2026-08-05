@@ -1,5 +1,14 @@
+:host {
+    display: inline-flex;
+    max-width: 100%;
+}
+
 .item {
-  padding: 3px;
-  border-radius: 5px;
-  margin: 0 5px;
+    padding: 3px;
+    border-radius: 5px;
+    margin: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
