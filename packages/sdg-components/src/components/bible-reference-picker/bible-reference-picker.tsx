@@ -239,6 +239,11 @@ export class BibleReferencePicker {
       this.isEnd = false;
   }
 
+  handleClearInput = () => {
+    this.resetReferenceBuilder();
+    this.inputElement?.focus();
+  }
+
   selectBook = (selectedBook: BibleBookInfo, addSpace?: boolean) => {
     console.log('selected: ' + selectedBook.CanonicalName)
     this.value = selectedBook.CanonicalName;
@@ -439,6 +444,7 @@ export class BibleReferencePicker {
             <ul class={{'hide': this.value == '', 'listheader': true}}>
               <li class="flex">
                 <span class="flex-1">{this.value}</span>
+                <i class="icon circle-x bg-secondary clickable" title="clear" onClick={() => this.handleClearInput()}></i>
                 <i class="icon circle-check bg-success clickable" title="submit" onClick={() => {
                   this.handleReferenceSubmit(this.value);
                   this.resetReferenceBuilder();

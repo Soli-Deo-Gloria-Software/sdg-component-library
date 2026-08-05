@@ -41,6 +41,10 @@
     padding: 0 10px;
 }
 
+.search-box .result-box ul.listheader li.flex {
+    gap: 4px;
+}
+
 .search-box .result-box ul {
     max-height: 300px;
     overflow-y: auto;
