@@ -30,6 +30,7 @@ export class BibleReferencePicker {
   @Event() referencesUpdated!: EventEmitter<BibleReference[]>;
 
   @Element() thisElement!: HTMLElement;
+
   @Listen('click', { target: 'window' })
   handleWindowClick(ev: MouseEvent) {
     const path = ev.composedPath();
@@ -392,6 +393,7 @@ export class BibleReferencePicker {
 
   removeReference(reference: BibleReference){
     this.references = this.references.filter(ref => ref.Canonical != reference.Canonical);
+    this.referencesUpdated.emit(this.references);
   }
 
   useWholeChapter = () => {
@@ -434,11 +436,11 @@ export class BibleReferencePicker {
               disabled={(this.references?.length ?? 0) >= this.maxNumberOfReferences}
               onFocus={() => this.onFocus()}
             />
-            <span class="reference-box">
-              { this.references.map(reference => {
-                return <multiselect-item itemReference={reference} onRemoveItem={() => this.removeReference(reference)}>{reference.Canonical}</multiselect-item>
-              })}
-            </span>
+            <multiselect-results
+              items={this.references}
+              itemLabel="reference"
+              onItemRemoved={(event) => this.removeReference(event.detail)}
+            />
           </div>
           <div class={{'show': this.isOpen, 'result-box':true}}>
             <ul class={{'hide': this.value == '', 'listheader': true}}>

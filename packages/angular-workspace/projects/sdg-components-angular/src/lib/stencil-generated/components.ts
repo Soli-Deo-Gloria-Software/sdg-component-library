@@ -68,3 +68,33 @@ export declare interface MultiselectItem extends Components.MultiselectItem {
 }
 
 
+@ProxyCmp({
+  inputs: ['compactMediaQuery', 'itemLabel', 'items', 'labelKey', 'maxInlineItems']
+})
+@Component({
+  selector: 'multiselect-results',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: '<ng-content></ng-content>',
+  // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
+  inputs: ['compactMediaQuery', 'itemLabel', 'items', 'labelKey', 'maxInlineItems'],
+  outputs: ['itemRemoved'],
+  standalone: false
+})
+export class MultiselectResults {
+  protected el: HTMLMultiselectResultsElement;
+  @Output() itemRemoved = new EventEmitter<MultiselectResultsCustomEvent<any>>();
+  constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
+    c.detach();
+    this.el = r.nativeElement;
+  }
+}
+
+
+import type { MultiselectResultsCustomEvent } from 'sdg-components';
+
+export declare interface MultiselectResults extends Components.MultiselectResults {
+
+  itemRemoved: EventEmitter<MultiselectResultsCustomEvent<any>>;
+}
+
+

@@ -1,0 +1,85 @@
+:host {
+    display: inline-flex;
+    max-width: 100%;
+}
+
+.results-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+    max-width: 100%;
+    position: relative;
+}
+
+.results-chip {
+    padding: 3px 6px;
+    border-radius: 5px;
+    border: 0;
+    font: inherit;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.results-count-chip {
+    display: none;
+}
+
+.results-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.results-expanded {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 10;
+    margin-top: 4px;
+    padding: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    max-width: min(100vw - 1rem, 20rem);
+    background: #fff;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.results-box.expanded .results-expanded,
+.results-box:has(.results-count-chip:hover) .results-expanded,
+.results-box:has(.results-overflow-chip:hover) .results-expanded,
+.results-expanded:hover {
+    display: flex;
+}
+
+@media (max-width: 480px) {
+    .results-count-chip {
+        display: inline-flex;
+    }
+
+    .results-inline {
+        display: none;
+    }
+
+    .results-expanded {
+        left: 0;
+        right: auto;
+        max-width: 100%;
+    }
+}
+
+@media (min-width: 481px) {
+    .results-count-chip {
+        display: none;
+    }
+
+    .results-inline {
+        display: flex;
+    }
+}
