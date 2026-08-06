@@ -466,14 +466,9 @@ export class BibleReferencePicker {
               </ul>
             </div>
             <div class={{'hide': this.availableNumbers.length <= 0}}>
-              <ul class="listheader">
-                <li>
-                  Select {this.isEnd ? 'Ending' : 'Starting'} {(this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse')}
-                </li>
-              </ul>
               <ul>
                 {
-                  (this.step == ReferencePickerState.Chapter && !this.isEnd) ? '' : <li onClick={() => {
+                  (this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
                     this.useWholeChapter();
                     if (this.isOpen) {
                       this.inputElement.focus();
