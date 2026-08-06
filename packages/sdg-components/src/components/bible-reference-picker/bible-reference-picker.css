@@ -64,6 +64,10 @@
     align-items: center;
 }
 
+.search-box .result-box ul.step-nav {
+    padding: 5px 10px 0;
+}
+
 .search-box .result-box ul.listheader li.flex .flex-1 {
     overflow: hidden;
     text-overflow: ellipsis;

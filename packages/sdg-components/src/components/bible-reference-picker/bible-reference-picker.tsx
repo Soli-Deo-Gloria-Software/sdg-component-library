@@ -205,6 +205,11 @@ export class BibleReferencePicker {
     else if (event.key == 'Escape') { //Cancel entry
       this.resetReferenceBuilder();
       event.preventDefault();
+    } else if (event.altKey && event.key === 'ArrowLeft') {
+      if (this.canStepBack()) {
+        event.preventDefault();
+        this.handleStepBack();
+      }
     } else if (event.key == "Tab") { //Complete current step
       if (this.value) {
         this.handleTextChange(this.value, true);
@@ -243,6 +248,80 @@ export class BibleReferencePicker {
   handleClearInput = () => {
     this.resetReferenceBuilder();
     this.inputElement?.focus();
+  }
+
+  private canStepBack(): boolean {
+    return this.selectedBook != undefined && this.step !== ReferencePickerState.Book;
+  }
+
+  handleStepBack = () => {
+    if (!this.canStepBack() || !this.selectedBook) {
+      return;
+    }
+
+    const partial = this.getPartialReference();
+    if (!partial) {
+      this.resetReferenceBuilder();
+      this.inputElement?.focus();
+      this.isOpen = true;
+      return;
+    }
+
+    const book = this.selectedBook;
+    const singleChapter = book.Chapters.length === 1;
+    const { step, isEnd } = this.getStepFromPartialReference(partial);
+
+    if (!isEnd) {
+      if (step === ReferencePickerState.Chapter) {
+        this.resetReferenceBuilder();
+      } else if (step === ReferencePickerState.Verse) {
+        if (singleChapter) {
+          this.resetReferenceBuilder();
+        } else if (partial.StartingChapter) {
+          partial.StartingVerse = undefined;
+          this.incompleteReference = partial;
+          this.isEnd = false;
+          this.loadVerses(book.Chapters[partial.StartingChapter - 1]);
+        }
+      }
+    } else if (step === ReferencePickerState.Verse) {
+      if (partial.EndingChapter != undefined && partial.EndingChapter !== partial.StartingChapter) {
+        partial.setEnding(undefined, undefined);
+        this.incompleteReference = partial;
+        this.isEnd = true;
+        this.loadChapters(book, partial.StartingChapter! + 1);
+      } else if (partial.StartingVerse != undefined) {
+        partial.setEnding(undefined, undefined);
+        this.incompleteReference = partial;
+        this.isEnd = false;
+        this.loadVerses(book.Chapters[(partial.StartingChapter ?? 1) - 1]);
+      } else if (partial.StartingChapter != undefined) {
+        partial.setEnding(undefined, undefined);
+        this.incompleteReference = partial;
+        this.isEnd = false;
+        this.loadChapters(book);
+      } else {
+        this.resetReferenceBuilder();
+      }
+    } else if (step === ReferencePickerState.Chapter) {
+      partial.setEnding(undefined, undefined);
+      this.incompleteReference = partial;
+      this.isEnd = false;
+
+      if (partial.StartingVerse != undefined) {
+        partial.StartingVerse = undefined;
+        this.loadVerses(book.Chapters[(partial.StartingChapter ?? 1) - 1]);
+      } else if (partial.StartingChapter != undefined) {
+        this.loadChapters(book);
+      } else {
+        this.resetReferenceBuilder(); //shouldn't be hit.
+      }
+    }
+    
+    this.value = this.getTextFromPartialReference(partial);
+    this.handleTextChange(this.value.toLowerCase());
+    this.inputElement?.focus();
+    this.isOpen = true;
   }
 
   selectBook = (selectedBook: BibleBookInfo, addSpace?: boolean) => {
@@ -322,6 +401,14 @@ export class BibleReferencePicker {
       }
     }
 
+    this.value = this.getTextFromPartialReference(partial);
+    this.handleTextChange(this.value);
+  }
+
+  private getTextFromPartialReference = (partial: RawBibleParseResult | undefined) : string => {
+    if (!partial)
+      return '';
+
     let text = `${partial.Book.CanonicalName} `;
     
     if (partial.Book.Chapters.length == 1) {
@@ -353,8 +440,7 @@ export class BibleReferencePicker {
       }
     }
 
-    this.value = text;
-    this.handleTextChange(text);
+    return text;
   }
 
   private getStepFromPartialReference = (partial: RawBibleParseResult | undefined) : {step: ReferencePickerState, isEnd: boolean} => {
@@ -445,6 +531,17 @@ export class BibleReferencePicker {
           <div class={{'show': this.isOpen, 'result-box':true}}>
             <ul class={{'hide': this.value == '', 'listheader': true}}>
               <li class="flex">
+                {this.canStepBack() ? (
+                  <ul class="listheader step-nav">
+                    <li class="flex">
+                  <i
+                    class="icon caret-left bg-secondary clickable"
+                    title="Back (Alt+←)"
+                    onClick={() => this.handleStepBack()}
+                  ></i>
+                    </li>
+                  </ul>
+                ) : ''}
                 <span class="flex-1">{this.value}</span>
                 <i class="icon circle-x bg-secondary clickable" title="clear" onClick={() => this.handleClearInput()}></i>
                 <i class="icon circle-check bg-success clickable" title="submit" onClick={() => {
