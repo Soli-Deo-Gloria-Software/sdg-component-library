@@ -264,34 +264,35 @@ export class BibleReferencePicker {
         } else {
           partial.StartingChapter = undefined;
           partial.StartingVerse = undefined;
-          this.incompleteReference = partial;
+          this.step = ReferencePickerState.StartingChapter;
           this.loadChapters(book, 1, ReferencePickerState.StartingChapter);
         }
         break;
       case ReferencePickerState.EndingChapter:
         partial.setEnding(undefined, undefined);
-        this.incompleteReference = partial;
         if (partial.StartingVerse != undefined) {
+          partial.StartingVerse = undefined;
+          this.step = ReferencePickerState.StartingVerse;
           this.loadVerses(book.Chapters[(partial.StartingChapter ?? 1) - 1], 1, ReferencePickerState.StartingVerse);
         } else {
+          this.step = ReferencePickerState.StartingChapter;
           this.loadChapters(book, 1, ReferencePickerState.StartingChapter);
         }
         break;
       case ReferencePickerState.EndingVerse:
         if (partial.EndingChapter != undefined && partial.EndingChapter !== partial.StartingChapter) {
+          partial.EndingChapter = undefined; //TODO: fix setEnding behavior in package.
+          this.step = ReferencePickerState.EndingChapter;
           partial.setEnding(undefined, undefined);
-          this.incompleteReference = partial;
           this.loadChapters(book, partial.StartingChapter! + 1, ReferencePickerState.EndingChapter);
         } else if (partial.StartingVerse != undefined) {
+          this.step = ReferencePickerState.StartingVerse;
           partial.StartingVerse = undefined;
           partial.setEnding(undefined, undefined);
-          this.incompleteReference = partial;
           this.loadVerses(book.Chapters[(partial.StartingChapter ?? 1) - 1], 1, ReferencePickerState.StartingVerse);
         } else if (partial.StartingChapter != undefined) {
-          partial.StartingVerse = undefined;
-          partial.StartingVerse = undefined;
+          partial.StartingVerse = undefined; //TODO: evaluate this code block - shouldn't happen.
           partial.setEnding(undefined, undefined);
-          this.incompleteReference = partial;
           this.loadChapters(book, 1, ReferencePickerState.StartingChapter);
         } else {
           this.resetReferenceBuilder();
@@ -300,8 +301,10 @@ export class BibleReferencePicker {
     }
 
     if (this.step !== ReferencePickerState.Book) {
+      this.incompleteReference = partial;
       this.value = this.getTextFromPartialReference(partial);
-      this.handleTextChange(this.value.toLowerCase());
+    } else {
+      this.incompleteReference = undefined;
     }
 
     this.inputElement?.focus();
@@ -385,7 +388,7 @@ export class BibleReferencePicker {
     }
 
     this.value = this.getTextFromPartialReference(partial);
-    this.handleTextChange(this.value);
+    this.step = this.resolveStateFromPartial(partial);
   }
 
   private resolveStateFromPartial(partial: RawBibleParseResult): ReferencePickerState {
@@ -592,8 +595,9 @@ export class BibleReferencePicker {
         input += '-';
         this.value = input;
       } 
-      console.log(`calling handler with input: ${input}`)
-      this.handleTextChange(input);
+      console.log(`calling handler with input: ${input}`);
+      this.incompleteReference = this.getPartialReference();
+      this.step = this.resolveStateFromPartial(this.incompleteReference!);
     }
   }
 
