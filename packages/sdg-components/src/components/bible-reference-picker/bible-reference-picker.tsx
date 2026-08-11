@@ -25,7 +25,6 @@ export class BibleReferencePicker {
   incompleteReference: RawBibleParseResult | undefined;
   inputElement!: HTMLElement;
   @State() references: BibleReference[] = [];
-  isEnd: boolean = false;
 
   @Event() referencesUpdated!: EventEmitter<BibleReference[]>;
 
@@ -140,35 +139,14 @@ export class BibleReferencePicker {
         }
       }
     } else {
-      this.incompleteReference = this.getPartialReference()!;
-      if (this.incompleteReference.StartingChapter) {
-        if (!this.incompleteReference.StartingVerse) {
-          if (this.value.endsWith(":")) {
-            this.loadVerses(this.selectedBook!.Chapters[this.incompleteReference.StartingChapter-1])
-          } else if (this.value.endsWith("-")){
-            this.isEnd = true;
-            this.loadChapters(this.selectedBook!, this.incompleteReference.StartingChapter + 1);
-          } else {
-            let chapterSegment = this.isEnd ? this.incompleteReference.EndingChapter : this.incompleteReference.StartingChapter;
-            let filtered = this.filterNumbers(chapterSegment?.toString() ?? '');
-            if (filtered && filtered.length > 0) {
-              this.availableNumbers = [...filtered]
-            }
-          }
-        } else {
-          //Verse is set here.
-          if (this.value.endsWith("-")){
-            this.isEnd = true;
-            this.loadVerses(this.selectedBook!.Chapters[this.incompleteReference.StartingChapter-1], this.incompleteReference.StartingVerse + 1)
-          } else {
-            let verseSegment = this.isEnd ? this.incompleteReference.EndingVerse : this.incompleteReference.StartingVerse;
-            let filtered = this.filterNumbers(verseSegment?.toString() ?? '');
-            if (filtered && filtered.length > 0) {
-              this.availableNumbers = [...filtered]
-            }
-          }
-        }
-      } 
+      const partial = this.getPartialReference();
+      if (!partial) {
+        return;
+      }
+
+      this.incompleteReference = partial;
+      this.step = this.resolveStateFromPartial(partial);
+      this.refreshStepLists(partial);
     }
   }
 
@@ -196,8 +174,7 @@ export class BibleReferencePicker {
           } else if (!this.value.includes(":") && this.selectedBook.Chapters.length > 1) {
             this.incompleteReference!.StartingVerse = undefined;
             this.incompleteReference!.StartingChapter = undefined;
-            this.loadChapters(this.selectedBook);
-            this.step = ReferencePickerState.Chapter;
+            this.loadChapters(this.selectedBook, 1, ReferencePickerState.StartingChapter);
           }
         }
       }
@@ -242,12 +219,19 @@ export class BibleReferencePicker {
       this.selectedBook = undefined;
       this.allowedRegex = undefined;
       this.incompleteReference = undefined;
-      this.isEnd = false;
   }
 
   handleClearInput = () => {
     this.resetReferenceBuilder();
     this.inputElement?.focus();
+  }
+
+  private isChapterStep(step: ReferencePickerState): boolean {
+    return step === ReferencePickerState.StartingChapter || step === ReferencePickerState.EndingChapter;
+  }
+
+  private isEndingStep(step: ReferencePickerState): boolean {
+    return step === ReferencePickerState.EndingChapter || step === ReferencePickerState.EndingVerse;
   }
 
   private canStepBack(): boolean {
@@ -269,57 +253,57 @@ export class BibleReferencePicker {
 
     const book = this.selectedBook;
     const singleChapter = book.Chapters.length === 1;
-    const { step, isEnd } = this.getStepFromPartialReference(partial);
 
-    if (!isEnd) {
-      if (step === ReferencePickerState.Chapter) {
+    switch (this.step) {
+      case ReferencePickerState.StartingChapter:
         this.resetReferenceBuilder();
-      } else if (step === ReferencePickerState.Verse) {
+        break;
+      case ReferencePickerState.StartingVerse:
         if (singleChapter) {
           this.resetReferenceBuilder();
-        } else if (partial.StartingChapter) {
+        } else {
+          partial.StartingChapter = undefined;
           partial.StartingVerse = undefined;
           this.incompleteReference = partial;
-          this.isEnd = false;
-          this.loadVerses(book.Chapters[partial.StartingChapter - 1]);
+          this.loadChapters(book, 1, ReferencePickerState.StartingChapter);
         }
-      }
-    } else if (step === ReferencePickerState.Verse) {
-      if (partial.EndingChapter != undefined && partial.EndingChapter !== partial.StartingChapter) {
+        break;
+      case ReferencePickerState.EndingChapter:
         partial.setEnding(undefined, undefined);
         this.incompleteReference = partial;
-        this.isEnd = true;
-        this.loadChapters(book, partial.StartingChapter! + 1);
-      } else if (partial.StartingVerse != undefined) {
-        partial.setEnding(undefined, undefined);
-        this.incompleteReference = partial;
-        this.isEnd = false;
-        this.loadVerses(book.Chapters[(partial.StartingChapter ?? 1) - 1]);
-      } else if (partial.StartingChapter != undefined) {
-        partial.setEnding(undefined, undefined);
-        this.incompleteReference = partial;
-        this.isEnd = false;
-        this.loadChapters(book);
-      } else {
-        this.resetReferenceBuilder();
-      }
-    } else if (step === ReferencePickerState.Chapter) {
-      partial.setEnding(undefined, undefined);
-      this.incompleteReference = partial;
-      this.isEnd = false;
-
-      if (partial.StartingVerse != undefined) {
-        partial.StartingVerse = undefined;
-        this.loadVerses(book.Chapters[(partial.StartingChapter ?? 1) - 1]);
-      } else if (partial.StartingChapter != undefined) {
-        this.loadChapters(book);
-      } else {
-        this.resetReferenceBuilder(); //shouldn't be hit.
-      }
+        if (partial.StartingVerse != undefined) {
+          this.loadVerses(book.Chapters[(partial.StartingChapter ?? 1) - 1], 1, ReferencePickerState.StartingVerse);
+        } else {
+          this.loadChapters(book, 1, ReferencePickerState.StartingChapter);
+        }
+        break;
+      case ReferencePickerState.EndingVerse:
+        if (partial.EndingChapter != undefined && partial.EndingChapter !== partial.StartingChapter) {
+          partial.setEnding(undefined, undefined);
+          this.incompleteReference = partial;
+          this.loadChapters(book, partial.StartingChapter! + 1, ReferencePickerState.EndingChapter);
+        } else if (partial.StartingVerse != undefined) {
+          partial.StartingVerse = undefined;
+          partial.setEnding(undefined, undefined);
+          this.incompleteReference = partial;
+          this.loadVerses(book.Chapters[(partial.StartingChapter ?? 1) - 1], 1, ReferencePickerState.StartingVerse);
+        } else if (partial.StartingChapter != undefined) {
+          partial.StartingVerse = undefined;
+          partial.StartingVerse = undefined;
+          partial.setEnding(undefined, undefined);
+          this.incompleteReference = partial;
+          this.loadChapters(book, 1, ReferencePickerState.StartingChapter);
+        } else {
+          this.resetReferenceBuilder();
+        }
+        break;
     }
-    
-    this.value = this.getTextFromPartialReference(partial);
-    this.handleTextChange(this.value.toLowerCase());
+
+    if (this.step !== ReferencePickerState.Book) {
+      this.value = this.getTextFromPartialReference(partial);
+      this.handleTextChange(this.value.toLowerCase());
+    }
+
     this.inputElement?.focus();
     this.isOpen = true;
   }
@@ -334,19 +318,18 @@ export class BibleReferencePicker {
 
     if (selectedBook.Chapters.length == 1){
       this.incompleteReference!.StartingChapter = 1;
-      this.loadVerses(selectedBook.Chapters[0]);
+      this.loadVerses(selectedBook.Chapters[0], 1, ReferencePickerState.StartingVerse);
     } else {
-      this.loadChapters(selectedBook);
+      this.loadChapters(selectedBook, undefined, ReferencePickerState.StartingChapter);
     }
     this.books = [];
   }
 
-  loadChapters = (book: BibleBookInfo, startChapter?: number) => {
+  loadChapters = (book: BibleBookInfo, startChapter?: number, step: ReferencePickerState = ReferencePickerState.StartingChapter) => {
     this.allNumbersForStep = this.getChapters(book, startChapter);
     this.availableNumbers = [...this.allNumbersForStep];
-    this.step = ReferencePickerState.Chapter;
-    // Think about number of digits allowed. For instance, most chapters only have double digit chapterss and none have 4 digits, so 1111 is invalid...
-    this.allowedRegex = new RegExp(/^[\d:\-]$/g); //Untested: only allow numbers optionally ending with : or -.
+    this.step = step;
+    this.allowedRegex = new RegExp(/^[\d:\-]$/g);
   }
 
   getChapters = (book: BibleBookInfo, startChapter?: number) : number[] => {
@@ -354,13 +337,12 @@ export class BibleReferencePicker {
     return book.Chapters.filter(chapter => chapter.Number >= startChapter).map(chapter => chapter.Number);
   }
 
-  loadVerses = (chapter: BibleChapter, startVerse?: number) => {
+  loadVerses = (chapter: BibleChapter, startVerse?: number, step: ReferencePickerState = ReferencePickerState.StartingVerse) => {
     startVerse ??= 1;
     this.allNumbersForStep = this.createArray(startVerse, chapter.VerseCount);
     this.availableNumbers = [...this.allNumbersForStep]
-    this.step = ReferencePickerState.Verse;
-    // Think about number of digits allowed. For instance, most chapters only have double digit versess and none have 4 digits, so 1111 is invalid...
-    this.allowedRegex = new RegExp(/^[\d\-]$/g); //Untested: only allow numbers optionally ending with a dash for a range.
+    this.step = step;
+    this.allowedRegex = new RegExp(/^[\d\-]$/g);
   }
 
   createArray = (start: number, end: number): number[] => {
@@ -377,32 +359,129 @@ export class BibleReferencePicker {
       return;
     }
 
-    let step = this.getStepFromPartialReference(partial);
-    if (!step.isEnd) {
-      if (step.step == ReferencePickerState.Chapter) {
+    switch (this.step) {
+      case ReferencePickerState.StartingChapter:
         partial.StartingChapter = selectedNumber;
-        this.step = ReferencePickerState.Verse;
-        this.loadVerses(this.selectedBook!.Chapters[selectedNumber-1])
-      } else {
+        this.loadVerses(this.selectedBook!.Chapters[selectedNumber - 1], 1, ReferencePickerState.StartingVerse);
+        break;
+      case ReferencePickerState.StartingVerse:
         partial.StartingVerse = selectedNumber;
-      }
-    } else {
-      if (step.step == ReferencePickerState.Chapter) {
+        break;
+      case ReferencePickerState.EndingChapter:
         partial.EndingChapter = selectedNumber;
-        this.step = ReferencePickerState.Verse
-        this.loadVerses(this.selectedBook!.Chapters[selectedNumber-1], partial.StartingVerse)
-      } else {
+        this.loadVerses(
+          this.selectedBook!.Chapters[selectedNumber - 1],
+          partial.StartingVerse ?? 1,
+          ReferencePickerState.EndingVerse
+        );
+        break;
+      case ReferencePickerState.EndingVerse:
         partial.EndingVerse = selectedNumber;
         let full = new BibleReference(partial);
-        if (this.addReferences([full]))
+        if (this.addReferences([full])) {
           this.resetReferenceBuilder();
-
+        }
         return;
-      }
     }
 
     this.value = this.getTextFromPartialReference(partial);
     this.handleTextChange(this.value);
+  }
+
+  private resolveStateFromPartial(partial: RawBibleParseResult): ReferencePickerState {
+    const singleChapter = partial.Book.Chapters.length === 1;
+
+    if (singleChapter) {
+      if (!partial.StartingVerse) {
+        return ReferencePickerState.StartingVerse;
+      }
+      if (this.value.endsWith('-') || partial.EndingVerse != undefined) {
+        return ReferencePickerState.EndingVerse;
+      }
+      return ReferencePickerState.StartingVerse;
+    }
+
+    if (!partial.StartingChapter) {
+      return ReferencePickerState.StartingChapter;
+    }
+
+    if (!partial.StartingVerse) {
+      if (this.value.endsWith(':')) {
+        return ReferencePickerState.StartingVerse;
+      }
+      if (this.value.endsWith('-')) {
+        return ReferencePickerState.EndingChapter;
+      }
+      return ReferencePickerState.StartingChapter;
+    }
+
+    if (partial.EndingChapter != undefined && partial.EndingChapter !== partial.StartingChapter) {
+      return ReferencePickerState.EndingVerse;
+    }
+
+    if (this.value.endsWith('-') || partial.EndingVerse != undefined) {
+      return ReferencePickerState.EndingVerse;
+    }
+
+    return ReferencePickerState.StartingVerse;
+  }
+
+  private getActiveNumberSegment(partial: RawBibleParseResult): string {
+    let segment: number | undefined;
+
+    switch (this.step) {
+      case ReferencePickerState.StartingChapter:
+        segment = partial.StartingChapter;
+        break;
+      case ReferencePickerState.StartingVerse:
+        segment = partial.StartingVerse;
+        break;
+      case ReferencePickerState.EndingChapter:
+        segment = partial.EndingChapter;
+        break;
+      case ReferencePickerState.EndingVerse:
+        segment = partial.EndingVerse;
+        break;
+      default:
+        return '';
+    }
+
+    if (segment == null || segment <= 0) {
+      return '';
+    }
+
+    return segment.toString();
+  }
+
+  private refreshStepLists(partial: RawBibleParseResult) {
+    const book = this.selectedBook!;
+
+    switch (this.step) {
+      case ReferencePickerState.StartingChapter:
+        this.loadChapters(book, 1, ReferencePickerState.StartingChapter);
+        break;
+      case ReferencePickerState.StartingVerse:
+        this.loadVerses(book.Chapters[(partial.StartingChapter ?? 1) - 1], 1, ReferencePickerState.StartingVerse);
+        break;
+      case ReferencePickerState.EndingChapter:
+        this.loadChapters(book, (partial.StartingChapter ?? 1) + 1, ReferencePickerState.EndingChapter);
+        break;
+      case ReferencePickerState.EndingVerse: {
+        const endingChapter = partial.EndingChapter != undefined && partial.EndingChapter !== partial.StartingChapter
+          ? partial.EndingChapter
+          : partial.StartingChapter!;
+        const startVerse = partial.EndingChapter != undefined && partial.EndingChapter !== partial.StartingChapter
+          ? (partial.StartingVerse ?? 1)
+          : (partial.StartingVerse ?? 0) + 1;
+        this.loadVerses(book.Chapters[endingChapter - 1], startVerse, ReferencePickerState.EndingVerse);
+        break;
+      }
+    }
+
+    const filtered = this.filterNumbers(this.getActiveNumberSegment(partial));
+    if (filtered.length > 0) {
+      this.availableNumbers = [...filtered];
+    }
   }
 
   private getTextFromPartialReference = (partial: RawBibleParseResult | undefined) : string => {
@@ -443,27 +522,6 @@ export class BibleReferencePicker {
     return text;
   }
 
-  private getStepFromPartialReference = (partial: RawBibleParseResult | undefined) : {step: ReferencePickerState, isEnd: boolean} => {
-    if (!partial) {
-      return {step: ReferencePickerState.Book, isEnd: false};
-    }
-
-    let isEnd = partial.EndingChapter != undefined || partial.EndingVerse != undefined || this.value.endsWith('-');
-
-    let step = ReferencePickerState.Chapter;
-    if (!isEnd) {
-      if (partial.StartingChapter) {
-        step = ReferencePickerState.Verse;
-      }
-    } else {
-      if (partial.StartingVerse || partial.EndingChapter) {
-        step = ReferencePickerState.Verse;
-      }
-    }
-
-    return {step: step, isEnd: isEnd};
-  }
-
   private getPartialReference = () : RawBibleParseResult | undefined => {
     if (!this.selectedBook)
       return undefined;
@@ -475,6 +533,40 @@ export class BibleReferencePicker {
     }
 
     return partial[0];
+  }
+
+  private canSelectEndingChapter(partial: RawBibleParseResult | undefined): boolean {
+    if (!partial || !this.selectedBook || this.step !== ReferencePickerState.EndingVerse) {
+      return false;
+    }
+
+    if (partial.Book.Chapters.length === 1) {
+      return false;
+    }
+
+    if (partial.EndingChapter != undefined && partial.EndingChapter !== partial.StartingChapter) {
+      return false;
+    }
+
+    const startingChapter = partial.StartingChapter ?? 1;
+    return startingChapter < partial.Book.Chapters.length;
+  }
+
+  selectEndingChapter = () => {
+    const partial = this.getPartialReference();
+    if (!partial || !this.selectedBook || !this.canSelectEndingChapter(partial)) {
+      return;
+    }
+
+    partial.setEnding(undefined, undefined);
+    this.incompleteReference = partial;
+    this.value = this.getTextFromPartialReference(partial);
+    this.loadChapters(this.selectedBook, (partial.StartingChapter ?? 1) + 1, ReferencePickerState.EndingChapter);
+    this.isOpen = true;
+  }
+
+  private preventInputBlur = (event: MouseEvent) => {
+    event.preventDefault();
   }
 
   removeReference(reference: BibleReference){
@@ -491,7 +583,7 @@ export class BibleReferencePicker {
       this.value = input;
     }
 
-    if (this.isEnd){
+    if (this.isEndingStep(this.step)){
       this.handleReferenceSubmit(input);
       this.resetReferenceBuilder();
     }
@@ -531,17 +623,17 @@ export class BibleReferencePicker {
           <div class={{'show': this.isOpen, 'result-box':true}}>
             <ul class={{'hide': this.value == '', 'listheader': true}}>
               <li class="flex">
-                {this.canStepBack() ? (
+                {this.canStepBack() && (
                   <ul class="listheader step-nav">
                     <li class="flex">
-                  <i
-                    class="icon caret-left bg-secondary clickable"
-                    title="Back (Alt+←)"
-                    onClick={() => this.handleStepBack()}
-                  ></i>
+                      <i
+                        class="icon caret-left bg-secondary clickable"
+                        title="Back (Alt+←)"
+                        onClick={() => this.handleStepBack()}
+                      ></i>
                     </li>
                   </ul>
-                ) : ''}
+                )}
                 <span class="flex-1">{this.value}</span>
                 <i class="icon circle-x bg-secondary clickable" title="clear" onClick={() => this.handleClearInput()}></i>
                 <i class="icon circle-check bg-success clickable" title="submit" onClick={() => {
@@ -555,7 +647,7 @@ export class BibleReferencePicker {
               <ul class="listheader"><li>Select Book</li></ul>
               <ul>
                 {this.books.map((item) => {
-                  return <li onClick={() => {
+                  return <li onMouseDown={(event) => this.preventInputBlur(event)} onClick={() => {
                     this.selectBook(item, true);
                     this.inputElement.focus();
                   }}>{item.CanonicalName}</li>
@@ -565,27 +657,31 @@ export class BibleReferencePicker {
             <div class={{'hide': this.availableNumbers.length <= 0}}>
               <ul>
                 {
-                  (this.step == ReferencePickerState.Chapter) ? '' : <li onClick={() => {
+                  this.step === ReferencePickerState.StartingVerse ?  <li onMouseDown={(event) => this.preventInputBlur(event)} onClick={() => {
                     this.useWholeChapter();
                     if (this.isOpen) {
                       this.inputElement.focus();
                     }
-                  }}>Use Entire Chapter</li> 
+                  }}>Use Entire Chapter</li> : ''
+                }
+                {
+                  this.canSelectEndingChapter(this.getPartialReference()) ? <li onMouseDown={(event) => this.preventInputBlur(event)} onClick={() => {
+                    this.selectEndingChapter();
+                  }}>Select Ending Chapter</li> : ''
                 }
                 {
                   this.availableNumbers.map((number) => {
-                    return <li onClick={() => {
+                    return <li onMouseDown={(event) => this.preventInputBlur(event)} onClick={() => {
                       this.selectNumber(number);
                       if (this.isOpen) {
                         this.inputElement.focus();
                       }
-                    }}>{this.step == ReferencePickerState.Chapter ? 'Chapter' : 'Verse'} {number}</li>
+                    }}>{this.isChapterStep(this.step) ? 'Chapter' : 'Verse'} {number}</li>
                   })
                 }
               </ul>
             </div>
           </div>
-          
         </div>
       </Host>
     );
