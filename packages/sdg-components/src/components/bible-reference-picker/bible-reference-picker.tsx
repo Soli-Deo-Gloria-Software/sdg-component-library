@@ -139,14 +139,18 @@ export class BibleReferencePicker {
         }
       }
     } else {
-      const partial = this.getPartialReference();
-      if (!partial) {
-        return;
-      }
+      try {
+        // Incomplete text can throw parse errors. Let user continue typing and only show error when submitting or when input has stopped.
+        const partial = this.getPartialReference();
+        if (!partial) {
+          return;
+        }
 
-      this.incompleteReference = partial;
-      this.step = this.resolveStateFromPartial(partial);
-      this.refreshStepLists(partial);
+        this.incompleteReference = partial;
+        this.step = this.resolveStateFromPartial(partial);
+        this.refreshStepLists(partial);
+      } catch {
+      }
     }
   }
 
@@ -302,7 +306,7 @@ export class BibleReferencePicker {
 
     if (this.step !== ReferencePickerState.Book) {
       this.incompleteReference = partial;
-      this.value = this.getTextFromPartialReference(partial);
+      this.value = partial.toString();
     } else {
       this.incompleteReference = undefined;
     }
@@ -387,7 +391,7 @@ export class BibleReferencePicker {
         return;
     }
 
-    this.value = this.getTextFromPartialReference(partial);
+    this.value = partial.toString();
     this.step = this.resolveStateFromPartial(partial);
   }
 
@@ -487,44 +491,6 @@ export class BibleReferencePicker {
     }
   }
 
-  private getTextFromPartialReference = (partial: RawBibleParseResult | undefined) : string => {
-    if (!partial)
-      return '';
-
-    let text = `${partial.Book.CanonicalName} `;
-    
-    if (partial.Book.Chapters.length == 1) {
-      if (partial.StartingVerse) {
-        text += `${partial.StartingVerse}`;
-        if (partial.EndingVerse) {
-          text += `-${partial.EndingVerse}`;
-        }
-      }
-    } else {
-      if (partial.StartingChapter) {
-        text += `${partial.StartingChapter}`;
-
-        if (partial.StartingVerse) {
-          text += `:${partial.StartingVerse}-`;
-        } else if (!partial.EndingChapter) {
-          text += ':'
-        } else {
-          text += '-'
-        }
-
-        if (partial.EndingChapter && partial.EndingChapter != partial.StartingChapter) {
-          text += `${partial.EndingChapter}:`;
-        } 
-        
-        if (partial.EndingVerse) {
-          text += `${partial.EndingVerse}`;
-        }
-      }
-    }
-
-    return text;
-  }
-
   private getPartialReference = () : RawBibleParseResult | undefined => {
     if (!this.selectedBook)
       return undefined;
@@ -563,7 +529,7 @@ export class BibleReferencePicker {
 
     partial.setEnding(undefined, undefined);
     this.incompleteReference = partial;
-    this.value = this.getTextFromPartialReference(partial);
+    this.value = partial.toString();
     this.loadChapters(this.selectedBook, (partial.StartingChapter ?? 1) + 1, ReferencePickerState.EndingChapter);
     this.isOpen = true;
   }
