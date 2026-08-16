@@ -139,18 +139,15 @@ export class BibleReferencePicker {
         }
       }
     } else {
-      try {
-        // Incomplete text can throw parse errors. Let user continue typing and only show error when submitting or when input has stopped.
-        const partial = this.getPartialReference();
-        if (!partial) {
-          return;
-        }
-
-        this.incompleteReference = partial;
-        this.step = this.resolveStateFromPartial(partial);
-        this.refreshStepLists(partial);
-      } catch {
+      const partial = this.getPartialReference();
+      if (!partial) {
+        return;
       }
+
+      this.incompleteReference = partial;
+      this.step = this.resolveStateFromPartial(partial);
+      console.log(`Resolved state: ${this.step}`)
+      this.refreshStepLists(partial);
     }
   }
 
@@ -412,6 +409,10 @@ export class BibleReferencePicker {
       return ReferencePickerState.StartingChapter;
     }
 
+    if (partial.EndingChapter != undefined && partial.EndingChapter !== partial.StartingChapter) {
+      return ReferencePickerState.EndingVerse;
+    }
+
     if (!partial.StartingVerse) {
       if (this.value.endsWith(':')) {
         return ReferencePickerState.StartingVerse;
@@ -420,10 +421,6 @@ export class BibleReferencePicker {
         return ReferencePickerState.EndingChapter;
       }
       return ReferencePickerState.StartingChapter;
-    }
-
-    if (partial.EndingChapter != undefined && partial.EndingChapter !== partial.StartingChapter) {
-      return ReferencePickerState.EndingVerse;
     }
 
     if (this.value.endsWith('-') || partial.EndingVerse != undefined) {
@@ -492,16 +489,23 @@ export class BibleReferencePicker {
   }
 
   private getPartialReference = () : RawBibleParseResult | undefined => {
-    if (!this.selectedBook)
-      return undefined;
-
-    let nonBookSegment = this.value.toLowerCase().replace(this.selectedBook?.CanonicalName.toLowerCase() ?? '', '').trimStart()
-    let partial = this._parser.getSingleRawReference(this.selectedBook!, nonBookSegment);
-    if (!partial || partial.length == 0) {
+    if (!this.selectedBook) {
       return undefined;
     }
 
-    return partial[0];
+    let nonBookSegment = this.value.toLowerCase().replace(this.selectedBook?.CanonicalName.toLowerCase() ?? '', '').trimStart();
+
+    try {
+      let partial = this._parser.getSingleRawReference(this.selectedBook!, nonBookSegment);
+      if (!partial || partial.length == 0) {
+        return undefined;
+      }
+
+      return partial[0];
+    } catch {
+      // Intermediate input such as "1:6-2" can throw before the ending chapter verse is complete ("1:6-2:5").
+      return undefined;
+    }
   }
 
   private canSelectEndingChapter(partial: RawBibleParseResult | undefined): boolean {
@@ -562,9 +566,10 @@ export class BibleReferencePicker {
         this.value = input;
       } 
       console.log(`calling handler with input: ${input}`);
-      this.incompleteReference = this.getPartialReference();
-      this.step = this.resolveStateFromPartial(this.incompleteReference!);
+      this.handleTextChange(input);
     }
+
+    console.log(`end of use whole chapter, current state: ${this.step}`)
   }
 
   render() {
