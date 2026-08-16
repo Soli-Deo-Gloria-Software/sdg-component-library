@@ -7,9 +7,10 @@
 
 ## Properties
 
-| Property                | Attribute                  | Description | Type     | Default |
-| ----------------------- | -------------------------- | ----------- | -------- | ------- |
-| `maxNumberOfReferences` | `max-number-of-references` |             | `number` | `1`     |
+| Property                   | Attribute                     | Description | Type      | Default |
+| -------------------------- | ----------------------------- | ----------- | --------- | ------- |
+| `allowWholeBookSubmission` | `allow-whole-book-submission` |             | `boolean` | `false` |
+| `maxNumberOfReferences`    | `max-number-of-references`    |             | `number`  | `1`     |
 
 
 ## Events

@@ -8,14 +8,14 @@ import { Components } from 'sdg-components';
 
 
 @ProxyCmp({
-  inputs: ['maxNumberOfReferences']
+  inputs: ['allowWholeBookSubmission', 'maxNumberOfReferences']
 })
 @Component({
   selector: 'bible-reference-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['maxNumberOfReferences'],
+  inputs: ['allowWholeBookSubmission', 'maxNumberOfReferences'],
   outputs: ['referencesUpdated'],
   standalone: false
 })
