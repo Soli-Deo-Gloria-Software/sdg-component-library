@@ -16,7 +16,8 @@ export class BibleReferencePicker {
   @State() isOpen: boolean = false;
   @State() step: ReferencePickerState = ReferencePickerState.Book;
   @State() availableNumbers: number[] = [];
-  @Prop() maxNumberOfReferences:number = 1;
+  @Prop() maxNumberOfReferences: number = 1;
+  @Prop() allowWholeBookSubmission: boolean = false;
 
   allNumbersForStep: number[] = [];
   selectedBook: BibleBookInfo | undefined;
@@ -68,8 +69,19 @@ export class BibleReferencePicker {
 
   handleReferenceSubmit = (text: string): boolean => {
     let parsed = this._parser.parse(text);
-    if (!parsed) {
-      return false;
+    if (!parsed || parsed.length == 0) {
+      if (this.allowWholeBookSubmission && this.selectedBook) {
+        let partial = this.getPartialReference();
+        parsed = [{ //TODO: Move logic to allow whole book references into parser package.
+          ProcessedText: text,
+          BibleReferences: [new BibleReference(partial!)],
+          SourceIndex: 0,
+          InstanceIndexes: [],
+          GetFormattedText: () => `${text}`
+        }]
+      } else {
+        return false;
+      }
     }
 
     let referenceAdded: boolean = false;
