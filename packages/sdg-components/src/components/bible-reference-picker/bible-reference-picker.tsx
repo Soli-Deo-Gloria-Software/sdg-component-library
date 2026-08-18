@@ -179,10 +179,10 @@ export class BibleReferencePicker {
 
   private isAllowedInputKey(key: string): boolean {
     if (this.step === ReferencePickerState.Book) {
-      return /^[A-Za-z0-9 ]$/.test(key);
+      return /^[A-Za-z0-9\s]$/.test(key);
     }
 
-    return /^[\d:\-]$/.test(key);
+    return /^[\d:\-\s]$/.test(key);
   }
 
   private clearInvalidKeyFeedbackTimer = () => {
