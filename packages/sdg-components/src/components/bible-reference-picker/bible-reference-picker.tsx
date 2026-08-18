@@ -611,15 +611,11 @@ export class BibleReferencePicker {
             <ul class={{'hide': this.value == '', 'listheader': true}}>
               <li class="flex">
                 {this.canStepBack() && (
-                  <ul class="listheader step-nav">
-                    <li class="flex">
-                      <i
-                        class="icon caret-left bg-secondary clickable"
-                        title="Back (Alt+←)"
-                        onClick={() => this.handleStepBack()}
-                      ></i>
-                    </li>
-                  </ul>
+                  <i
+                    class="icon caret-left bg-secondary clickable"
+                    title="Back (Alt+←)"
+                    onClick={() => this.handleStepBack()}
+                  ></i>
                 )}
                 <span class="flex-1">{this.value}</span>
                 <i class="icon circle-x bg-secondary clickable" title="clear" onClick={() => this.handleClearInput()}></i>
