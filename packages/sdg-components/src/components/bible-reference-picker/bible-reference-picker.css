@@ -28,6 +28,13 @@
     min-width: 0;
 }
 
+.search-box .input-wrapper {
+    position: relative;
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+}
+
 .search-box input {
     flex: 1 1 0;
     min-width: 0;
@@ -36,6 +43,35 @@
     outline: 0;
     color: #333;
     width: auto;
+}
+
+.invalid-key-feedback {
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #dc3545;
+    font-weight: 700;
+    line-height: 1;
+    animation: invalid-key-fade 600ms ease-out forwards;
+}
+
+@keyframes invalid-key-fade {
+    0% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1.25);
+    }
+
+    70% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.9);
+    }
 }
 
 .search-box input:disabled {

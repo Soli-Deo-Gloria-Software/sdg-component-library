@@ -21,15 +21,20 @@ export class BibleReferencePicker {
 
   allNumbersForStep: number[] = [];
   selectedBook: BibleBookInfo | undefined;
-  allowedRegex: RegExp | undefined;
-  alphaNumericRegex: RegExp = /[A-Za-z0-9: \-]/
   incompleteReference: RawBibleParseResult | undefined;
   inputElement!: HTMLElement;
   @State() references: BibleReference[] = [];
+  @State() invalidKeyFeedback: string = '';
+
+  private invalidKeyFeedbackTimer?: ReturnType<typeof setTimeout>;
 
   @Event() referencesUpdated!: EventEmitter<BibleReference[]>;
 
   @Element() thisElement!: HTMLElement;
+
+  disconnectedCallback() {
+    this.clearInvalidKeyFeedbackTimer();
+  }
 
   @Listen('click', { target: 'window' })
   handleWindowClick(ev: MouseEvent) {
@@ -172,6 +177,30 @@ export class BibleReferencePicker {
     return sourceNumbers?.filter(num => num.toString().includes(text)) ?? [];
   }
 
+  private isAllowedInputKey(key: string): boolean {
+    if (this.step === ReferencePickerState.Book) {
+      return /^[A-Za-z0-9 ]$/.test(key);
+    }
+
+    return /^[\d:\-]$/.test(key);
+  }
+
+  private clearInvalidKeyFeedbackTimer = () => {
+    if (this.invalidKeyFeedbackTimer != null) {
+      clearTimeout(this.invalidKeyFeedbackTimer);
+      this.invalidKeyFeedbackTimer = undefined;
+    }
+  }
+
+  private showInvalidKeyFeedback = (key: string) => {
+    this.clearInvalidKeyFeedbackTimer();
+    this.invalidKeyFeedback = key === ' ' ? '\u2423' : key;
+    this.invalidKeyFeedbackTimer = setTimeout(() => {
+      this.invalidKeyFeedback = '';
+      this.invalidKeyFeedbackTimer = undefined;
+    }, 600);
+  }
+
   handleKeyPress = (event: KeyboardEvent) => {
     if (this.references?.length >= this.maxNumberOfReferences) {
       event.preventDefault();
@@ -208,16 +237,13 @@ export class BibleReferencePicker {
         return;
       }
     } else if (event.key == "Enter" || event.key == ";") { // Parse reference
+      event.preventDefault();
       if (this.handleReferenceSubmit(this.value)) {
-        event.preventDefault();
         this.resetReferenceBuilder();
       }
-    } else if (!this.alphaNumericRegex.test(event.key)) {
-      console.log('failed valid key test')
+    } else if (event.key.length === 1 && !this.isAllowedInputKey(event.key)) {
       event.preventDefault();
-      // if (this.allowedRegex && !this.allowedRegex.test(event.key)){ //Block text change event.
-      //  event.preventDefault(); //TODO: Invalid text indicator.
-      // }
+      this.showInvalidKeyFeedback(event.key);
     }
   }
 
@@ -230,7 +256,6 @@ export class BibleReferencePicker {
       this.allNumbersForStep = [];
       this.step = ReferencePickerState.Book;
       this.selectedBook = undefined;
-      this.allowedRegex = undefined;
       this.incompleteReference = undefined;
   }
 
@@ -345,7 +370,6 @@ export class BibleReferencePicker {
     this.allNumbersForStep = this.getChapters(book, startChapter);
     this.availableNumbers = [...this.allNumbersForStep];
     this.step = step;
-    this.allowedRegex = new RegExp(/^[\d:\-]$/g);
   }
 
   getChapters = (book: BibleBookInfo, startChapter?: number) : number[] => {
@@ -358,7 +382,6 @@ export class BibleReferencePicker {
     this.allNumbersForStep = this.createArray(startVerse, chapter.VerseCount);
     this.availableNumbers = [...this.allNumbersForStep]
     this.step = step;
-    this.allowedRegex = new RegExp(/^[\d\-]$/g);
   }
 
   createArray = (start: number, end: number): number[] => {
@@ -589,18 +612,25 @@ export class BibleReferencePicker {
       <Host>
         <div class="search-box">
           <div class="flex">
-            <input type="text" name="input" 
-              ref={(el) => (this.inputElement = el as HTMLInputElement)}
-              value={this.value} 
-              id="input" 
-              placeholder="Scripture Reference" 
-              autocomplete="off" 
-              onInput={(event) => this.textChange(event)} 
-              onPaste={(event) => this.handlePaste(event)} 
-              onKeyDown={(event) => this.handleKeyPress(event)}
-              disabled={(this.references?.length ?? 0) >= this.maxNumberOfReferences}
-              onFocus={() => this.onFocus()}
-            />
+            <span class="input-wrapper">
+              <input type="text" name="input" 
+                ref={(el) => (this.inputElement = el as HTMLInputElement)}
+                value={this.value} 
+                id="input" 
+                placeholder="Scripture Reference" 
+                autocomplete="off" 
+                onInput={(event) => this.textChange(event)} 
+                onPaste={(event) => this.handlePaste(event)} 
+                onKeyDown={(event) => this.handleKeyPress(event)}
+                disabled={(this.references?.length ?? 0) >= this.maxNumberOfReferences}
+                onFocus={() => this.onFocus()}
+              />
+              {this.invalidKeyFeedback ? (
+                <span class="invalid-key-feedback" aria-live="polite">
+                  {this.invalidKeyFeedback}
+                </span>
+              ) : ''}
+            </span>
             <multiselect-results
               items={this.references}
               itemLabel="reference"
