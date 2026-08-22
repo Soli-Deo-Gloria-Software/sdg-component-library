@@ -12,7 +12,7 @@
 | `compactMediaQuery` | `compact-media-query` |             | `string` | `'(max-width: 480px)'` |
 | `itemLabel`         | `item-label`          |             | `string` | `'item'`               |
 | `items`             | --                    |             | `any[]`  | `[]`                   |
-| `labelKey`          | `label-key`           |             | `string` | `'Canonical'`          |
+| `labelKey`          | `label-key`           |             | `string` | `item.toString()`      |
 | `maxInlineItems`    | `max-inline-items`    |             | `number` | `2`                    |
 
 

@@ -1,6 +1,6 @@
 import { Component, Host, State, Prop, Event, EventEmitter, h, Listen, Element } from '@stencil/core';
 import { BibleBookInfo, BibleBooks, BibleChapter } from '@soli-deo-gloria-software/bible-books'
-import { BibleParser, BibleReference, RawBibleParseResult} from '@soli-deo-gloria-software/bible-reference-finder'
+import { BibleParser, BibleReference, IBibleReference, RawBibleParseResult} from '@soli-deo-gloria-software/bible-reference-finder'
 import { ReferencePickerState } from '../../utils/enums';
 
 @Component({
@@ -23,12 +23,12 @@ export class BibleReferencePicker {
   selectedBook: BibleBookInfo | undefined;
   incompleteReference: RawBibleParseResult | undefined;
   inputElement!: HTMLElement;
-  @State() references: BibleReference[] = [];
+  @State() references: IBibleReference[] = [];
   @State() invalidKeyFeedback: string = '';
 
   private invalidKeyFeedbackTimer?: ReturnType<typeof setTimeout>;
 
-  @Event() referencesUpdated!: EventEmitter<BibleReference[]>;
+  @Event() referencesUpdated!: EventEmitter<IBibleReference[]>;
 
   @Element() thisElement!: HTMLElement;
 
@@ -73,26 +73,17 @@ export class BibleReferencePicker {
   }
 
   handleReferenceSubmit = (text: string): boolean => {
-    let parsed = this._parser.parse(text);
-    if (!parsed || parsed.length == 0) {
-      if (this.allowWholeBookSubmission && this.selectedBook) {
-        let partial = this.getPartialReference();
-        parsed = [{ //TODO: Move logic to allow whole book references into parser package.
-          ProcessedText: text,
-          BibleReferences: [new BibleReference(partial!)],
-          SourceIndex: 0,
-          InstanceIndexes: [],
-          GetFormattedText: () => `${text}`
-        }]
-      } else {
-        return false;
-      }
+    let parseResult = this._parser.tryParseIncomplete(text);
+    if (!parseResult.success) {
+      return false;
     }
 
-    let referenceAdded: boolean = false;
-    parsed.forEach(collection => {
-      referenceAdded = this.addReferences(collection.BibleReferences)
-    })
+    if (!this.allowWholeBookSubmission && !parseResult.reference?.StartingChapter) {
+      return false;
+    }
+    let parsed : IBibleReference = parseResult.reference!;
+
+    let referenceAdded: boolean = this.addReferences([parsed]);
 
     if (!referenceAdded) {
       this.value = text;
@@ -101,12 +92,12 @@ export class BibleReferencePicker {
     return referenceAdded;
   }
 
-  addReferences = (newReferences: BibleReference[]) : boolean => {
-    let references: BibleReference[] = [...this.references]
+  addReferences = (newReferences: IBibleReference[]) : boolean => {
+    let references: IBibleReference[] = [...this.references]
 
     newReferences.forEach(reference => {
       if (references.length < this.maxNumberOfReferences) {
-        if (!references.some(ref => ref.Canonical == reference.Canonical))
+        if (!references.some(ref => ref.toString() == reference.toString()))
         references.push(reference);
       }
     })
@@ -524,23 +515,8 @@ export class BibleReferencePicker {
   }
 
   private getPartialReference = () : RawBibleParseResult | undefined => {
-    if (!this.selectedBook) {
-      return undefined;
-    }
-
-    let nonBookSegment = this.value.toLowerCase().replace(this.selectedBook?.CanonicalName.toLowerCase() ?? '', '').trimStart();
-
-    try {
-      let partial = this._parser.getSingleRawReference(this.selectedBook!, nonBookSegment);
-      if (!partial || partial.length == 0) {
-        return undefined;
-      }
-
-      return partial[0];
-    } catch {
-      // Intermediate input such as "1:6-2" can throw before the ending chapter verse is complete ("1:6-2:5").
-      return undefined;
-    }
+    let tryParseResult = this._parser.tryParseIncomplete(this.value);
+    return tryParseResult.reference;
   }
 
   private canSelectEndingChapter(partial: RawBibleParseResult | undefined): boolean {
@@ -577,8 +553,8 @@ export class BibleReferencePicker {
     event.preventDefault();
   }
 
-  removeReference(reference: BibleReference){
-    this.references = this.references.filter(ref => ref.Canonical != reference.Canonical);
+  removeReference(reference: IBibleReference){
+    this.references = this.references.filter(ref => ref.toString() != reference.toString());
     this.referencesUpdated.emit(this.references);
   }
 

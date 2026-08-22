@@ -9,7 +9,7 @@ import { Component, Element, Event, EventEmitter, Host, Listen, Prop, State, Wat
 export class MultiselectResults {
   @Prop() items: any[] = [];
   @Prop() maxInlineItems: number = 2;
-  @Prop() labelKey: string = 'Canonical';
+  @Prop() labelKey: string | undefined;
   @Prop() itemLabel: string = 'item';
   @Prop() compactMediaQuery: string = '(max-width: 480px)';
 
@@ -57,7 +57,13 @@ export class MultiselectResults {
   }
 
   private getItemLabel(item: any): string {
-    return item?.[this.labelKey] ?? '';
+    let label: string|undefined;
+    if (this.labelKey) {
+     label = item?.[this.labelKey];
+    }
+
+    label = label ?? item?.toString();
+    return label ?? '';
   }
 
   private getCollapsedItems(): any[] {
