@@ -78,12 +78,15 @@ export class BibleReferencePicker {
       return false;
     }
 
-    if (!this.allowWholeBookSubmission && !parseResult.reference?.StartingChapter) {
+    let reference:IBibleReference | undefined = parseResult.reference;
+
+    if (parseResult?.reference?.StartingChapter) {
+      reference = new BibleReference(parseResult.reference)
+    } else if (!this.allowWholeBookSubmission) {
       return false;
     }
-    let parsed : IBibleReference = parseResult.reference!;
 
-    let referenceAdded: boolean = this.addReferences([parsed]);
+    let referenceAdded: boolean = this.addReferences([reference!]);
 
     if (!referenceAdded) {
       this.value = text;
