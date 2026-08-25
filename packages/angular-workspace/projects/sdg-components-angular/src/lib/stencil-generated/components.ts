@@ -21,7 +21,7 @@ import { Components } from 'sdg-components';
 })
 export class BibleReferencePicker {
   protected el: HTMLBibleReferencePickerElement;
-  @Output() referencesUpdated = new EventEmitter<BibleReferencePickerCustomEvent<IBibleReferencePickerBibleReference[]>>();
+  @Output() referencesUpdated = new EventEmitter<BibleReferencePickerCustomEvent<IBibleReferencePickerIBibleReference[]>>();
   constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
     c.detach();
     this.el = r.nativeElement;
@@ -30,11 +30,11 @@ export class BibleReferencePicker {
 
 
 import type { BibleReferencePickerCustomEvent } from 'sdg-components';
-import type { BibleReference as IBibleReferencePickerBibleReference } from 'sdg-components';
+import type { IBibleReference as IBibleReferencePickerIBibleReference } from 'sdg-components';
 
 export declare interface BibleReferencePicker extends Components.BibleReferencePicker {
 
-  referencesUpdated: EventEmitter<BibleReferencePickerCustomEvent<IBibleReferencePickerBibleReference[]>>;
+  referencesUpdated: EventEmitter<BibleReferencePickerCustomEvent<IBibleReferencePickerIBibleReference[]>>;
 }
 
 
