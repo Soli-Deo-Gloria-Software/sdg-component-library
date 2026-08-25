@@ -15,9 +15,9 @@
 
 ## Events
 
-| Event               | Description | Type                            |
-| ------------------- | ----------- | ------------------------------- |
-| `referencesUpdated` |             | `CustomEvent<BibleReference[]>` |
+| Event               | Description | Type                             |
+| ------------------- | ----------- | -------------------------------- |
+| `referencesUpdated` |             | `CustomEvent<IBibleReference[]>` |
 
 
 ## Dependencies

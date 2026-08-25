@@ -3,6 +3,12 @@ import { BibleBookInfo, BibleBooks, BibleChapter } from '@soli-deo-gloria-softwa
 import { BibleParser, BibleReference, IBibleReference, RawBibleParseResult} from '@soli-deo-gloria-software/bible-reference-finder'
 import { ReferencePickerState } from '../../utils/enums';
 
+type SelectableOption =
+  | { type: 'book'; book: BibleBookInfo }
+  | { type: 'whole-chapter' }
+  | { type: 'ending-chapter' }
+  | { type: 'number'; value: number };
+
 @Component({
   tag: 'bible-reference-picker',
   styleUrl: 'bible-reference-picker.css',
@@ -25,6 +31,7 @@ export class BibleReferencePicker {
   inputElement!: HTMLElement;
   @State() references: IBibleReference[] = [];
   @State() invalidKeyFeedback: string = '';
+  @State() highlightedOptionIndex: number = -1;
 
   private invalidKeyFeedbackTimer?: ReturnType<typeof setTimeout>;
 
@@ -34,6 +41,13 @@ export class BibleReferencePicker {
 
   disconnectedCallback() {
     this.clearInvalidKeyFeedbackTimer();
+  }
+
+  componentDidRender() {
+    if (this.highlightedOptionIndex >= 0) {
+      const highlighted = this.thisElement.querySelector('.result-box li.option-highlighted');
+      highlighted?.scrollIntoView({ block: 'nearest' });
+    }
   }
 
   @Listen('click', { target: 'window' })
@@ -121,6 +135,7 @@ export class BibleReferencePicker {
   textChange = (event: InputEvent) => {
     let input = (event.target as any).value;
     this.value = input;
+    this.resetHighlight();
     this.handleTextChange(input.toLowerCase());
   }
 
@@ -171,6 +186,100 @@ export class BibleReferencePicker {
     return sourceNumbers?.filter(num => num.toString().includes(text)) ?? [];
   }
 
+  private resetHighlight = () => {
+    this.highlightedOptionIndex = -1;
+  }
+
+  private getSelectableOptions(): SelectableOption[] {
+    if (this.step === ReferencePickerState.Book) {
+      return this.books.map(book => ({ type: 'book', book }));
+    }
+
+    const options: SelectableOption[] = [];
+
+    if (this.step === ReferencePickerState.StartingVerse) {
+      options.push({ type: 'whole-chapter' });
+    }
+
+    if (this.canSelectEndingChapter(this.getPartialReference())) {
+      options.push({ type: 'ending-chapter' });
+    }
+
+    this.availableNumbers.forEach(number => {
+      options.push({ type: 'number', value: number });
+    });
+
+    return options;
+  }
+
+  private getOptionLabel(option: SelectableOption): string {
+    switch (option.type) {
+      case 'book':
+        return option.book.CanonicalName;
+      case 'whole-chapter':
+        return 'Use Entire Chapter';
+      case 'ending-chapter':
+        return 'Select Ending Chapter';
+      case 'number':
+        return `${this.isChapterStep(this.step) ? 'Chapter' : 'Verse'} ${option.value}`;
+    }
+  }
+
+  private moveHighlight(delta: number) {
+    const options = this.getSelectableOptions();
+    if (options.length === 0) {
+      return;
+    }
+
+    if (this.highlightedOptionIndex < 0) {
+      this.highlightedOptionIndex = delta > 0 ? 0 : options.length - 1;
+      return;
+    }
+
+    const nextIndex = this.highlightedOptionIndex + delta;
+    if (nextIndex < 0) {
+      this.highlightedOptionIndex = 0;
+      return;
+    }
+
+    if (nextIndex >= options.length) {
+      this.highlightedOptionIndex = options.length - 1;
+      return;
+    }
+
+    this.highlightedOptionIndex = nextIndex;
+  }
+
+  private selectOption = (option: SelectableOption) => {
+    switch (option.type) {
+      case 'book':
+        this.selectBook(option.book, true);
+        break;
+      case 'whole-chapter':
+        this.useWholeChapter();
+        break;
+      case 'ending-chapter':
+        this.selectEndingChapter();
+        break;
+      case 'number':
+        this.selectNumber(option.value);
+        break;
+    }
+
+    this.resetHighlight();
+    this.inputElement?.focus();
+  }
+
+  private selectHighlightedOption = (): boolean => {
+    const options = this.getSelectableOptions();
+    if (this.highlightedOptionIndex < 0 || this.highlightedOptionIndex >= options.length) {
+      return false;
+    }
+
+    this.selectOption(options[this.highlightedOptionIndex]);
+    return true;
+  }
+
   private isAllowedInputKey(key: string): boolean {
     if (this.step === ReferencePickerState.Book) {
       return /^[A-Za-z0-9\s]$/.test(key);
@@ -218,10 +327,26 @@ export class BibleReferencePicker {
     else if (event.key == 'Escape') { //Cancel entry
       this.resetReferenceBuilder();
       event.preventDefault();
+      this.isOpen = false;
+      this.inputElement.blur();
     } else if (event.altKey && event.key === 'ArrowLeft') {
       if (this.canStepBack()) {
         event.preventDefault();
         this.handleStepBack();
+      }
+    } else if (event.key === 'ArrowDown') {
+      if (this.isOpen && this.getSelectableOptions().length > 0) {
+        event.preventDefault();
+        this.moveHighlight(1);
+      }
+    } else if (event.key === 'ArrowUp') {
+      if (this.isOpen && this.getSelectableOptions().length > 0) {
+        event.preventDefault();
+        this.moveHighlight(-1);
+      }
+    } else if (event.key === 'ArrowRight') {
+      if (this.highlightedOptionIndex >= 0 && this.selectHighlightedOption()) {
+        event.preventDefault();
       }
     } else if (event.key == "Tab") { //Complete current step
       if (this.value) {
@@ -232,6 +357,9 @@ export class BibleReferencePicker {
       }
     } else if (event.key == "Enter" || event.key == ";") { // Parse reference
       event.preventDefault();
+      if (this.highlightedOptionIndex >= 0 && this.selectHighlightedOption()) {
+        return;
+      }
       if (this.handleReferenceSubmit(this.value)) {
         this.resetReferenceBuilder();
       }
@@ -251,6 +379,7 @@ export class BibleReferencePicker {
       this.step = ReferencePickerState.Book;
       this.selectedBook = undefined;
       this.incompleteReference = undefined;
+      this.resetHighlight();
   }
 
   handleClearInput = () => {
@@ -402,9 +531,10 @@ export class BibleReferencePicker {
         break;
       case ReferencePickerState.EndingChapter:
         partial.EndingChapter = selectedNumber;
+        let startingVerse = partial.StartingChapter != selectedNumber ? 1 : partial.StartingVerse ?? 1;
         this.loadVerses(
           this.selectedBook!.Chapters[selectedNumber - 1],
-          partial.StartingVerse ?? 1,
+          startingVerse,
           ReferencePickerState.EndingVerse
         );
         break;
@@ -522,6 +652,35 @@ export class BibleReferencePicker {
     return tryParseResult.reference;
   }
 
+  private isSubmitable(): boolean {
+    if (this.step == ReferencePickerState.Book) {
+      return false;
+    }
+
+    if (this.allowWholeBookSubmission) {
+      return true;
+    }
+
+    let partial = this.getPartialReference();
+
+    return partial?.StartingChapter != undefined;
+  }
+
+  private getStepSelectionLabel(): string {
+    switch (this.step) {
+      case ReferencePickerState.StartingChapter:
+        return 'Starting Chapter';
+      case ReferencePickerState.StartingVerse:
+        return 'Starting Verse';
+      case ReferencePickerState.EndingChapter:
+        return 'Ending Chapter';
+      case ReferencePickerState.EndingVerse:
+        return 'Ending Verse';
+      default:
+        return '';
+    }
+  }
+
   private canSelectEndingChapter(partial: RawBibleParseResult | undefined): boolean {
     if (!partial || !this.selectedBook || this.step !== ReferencePickerState.EndingVerse) {
       return false;
@@ -628,49 +787,42 @@ export class BibleReferencePicker {
                 )}
                 <span class="flex-1">{this.value}</span>
                 <i class="icon circle-x bg-secondary clickable" title="clear" onClick={() => this.handleClearInput()}></i>
-                <i class="icon circle-check bg-success clickable" title="submit" onClick={() => {
+                <i class={{
+                    'hide': !this.isSubmitable(),
+                    'icon': true,
+                    'circle-check': true,
+                    'clickable': true,
+                    'bg-success': true}} title="submit" onClick={() => {
                   this.handleReferenceSubmit(this.value);
                   this.resetReferenceBuilder();
                   }}
                 ></i>
               </li>
             </ul>
-            <div class={{'hide' : this.step != ReferencePickerState.Book}}>
+            <div class={{'hide' : this.step != ReferencePickerState.Book || this.books.length <= 0}}>
               <ul class="listheader"><li>Select Book</li></ul>
               <ul>
-                {this.books.map((item) => {
-                  return <li onMouseDown={(event) => this.preventInputBlur(event)} onClick={() => {
-                    this.selectBook(item, true);
-                    this.inputElement.focus();
-                  }}>{item.CanonicalName}</li>
+                {this.getSelectableOptions().map((option, index) => {
+                  return <li
+                    class={{'option-highlighted': index === this.highlightedOptionIndex}}
+                    onMouseDown={(event) => this.preventInputBlur(event)}
+                    onClick={() => this.selectOption(option)}
+                  >{this.getOptionLabel(option)}</li>
                 })}
               </ul>
             </div>
-            <div class={{'hide': this.availableNumbers.length <= 0}}>
+            <div class={{'hide': this.step === ReferencePickerState.Book || this.getSelectableOptions().length <= 0}}>
+              <ul class="listheader">
+                <li>Select {this.getStepSelectionLabel()}</li>
+              </ul>
               <ul>
-                {
-                  this.step === ReferencePickerState.StartingVerse ?  <li onMouseDown={(event) => this.preventInputBlur(event)} onClick={() => {
-                    this.useWholeChapter();
-                    if (this.isOpen) {
-                      this.inputElement.focus();
-                    }
-                  }}>Use Entire Chapter</li> : ''
-                }
-                {
-                  this.canSelectEndingChapter(this.getPartialReference()) ? <li onMouseDown={(event) => this.preventInputBlur(event)} onClick={() => {
-                    this.selectEndingChapter();
-                  }}>Select Ending Chapter</li> : ''
-                }
-                {
-                  this.availableNumbers.map((number) => {
-                    return <li onMouseDown={(event) => this.preventInputBlur(event)} onClick={() => {
-                      this.selectNumber(number);
-                      if (this.isOpen) {
-                        this.inputElement.focus();
-                      }
-                    }}>{this.isChapterStep(this.step) ? 'Chapter' : 'Verse'} {number}</li>
-                  })
-                }
+                {this.getSelectableOptions().map((option, index) => {
+                  return <li
+                    class={{'option-highlighted': index === this.highlightedOptionIndex}}
+                    onMouseDown={(event) => this.preventInputBlur(event)}
+                    onClick={() => this.selectOption(option)}
+                  >{this.getOptionLabel(option)}</li>
+                })}
               </ul>
             </div>
           </div>

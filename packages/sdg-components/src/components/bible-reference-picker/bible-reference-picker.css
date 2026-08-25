@@ -131,7 +131,8 @@
     cursor: pointer;
 }
 
-.search-box .result-box ul:not(.listheader) li:hover {
+.search-box .result-box ul:not(.listheader) li:hover,
+.search-box .result-box ul:not(.listheader) li.option-highlighted {
     background-color: #ccc;
 }
 
