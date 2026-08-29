@@ -1,6 +1,14 @@
+:host {
+    display: block;
+    width: 100%;
+    min-width: 0;
+}
+
 .search-box {
     background-color: transparent;
     display: block;
+    width: 100%;
+    min-width: 0;
 }
 
 .flex {
@@ -8,18 +16,63 @@
 }
 
 .flex .flex-1 {
-    flex:1;
+    flex: 1;
+    min-width: 0;
+}
+
+.search-box > .flex {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    width: 100%;
+    min-width: 0;
+}
+
+.search-box .input-wrapper {
+    position: relative;
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .search-box input {
-    flex: 1;
+    flex: 1 1 0;
     min-width: 0;
     background: transparent;
     border: 0;
     outline: 0;
     color: #333;
-    width: max-content;
-} 
+    width: auto;
+}
+
+.invalid-key-feedback {
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #dc3545;
+    font-weight: 700;
+    line-height: 1;
+    animation: invalid-key-fade 600ms ease-out forwards;
+}
+
+@keyframes invalid-key-fade {
+    0% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1.25);
+    }
+
+    70% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.9);
+    }
+}
 
 .search-box input:disabled {
     cursor: not-allowed;
@@ -28,12 +81,13 @@
 .search-box .result-box {
     display: none;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .search-box .result-box.show {
     margin-top: 3px;
     border-top: 1px solid #bbb;
-    display: inline-block;
+    display: block;
     font-size: 0.85em;
 }
 
@@ -41,10 +95,26 @@
     padding: 0 10px;
 }
 
+.search-box .result-box ul.listheader li.flex {
+    gap: 4px;
+    align-items: center;
+}
+
+.search-box .result-box ul.step-nav {
+    padding: 5px 10px 0;
+}
+
+.search-box .result-box ul.listheader li.flex .flex-1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .search-box .result-box ul {
-    max-height: 300px;
+    max-height: min(300px, 50vh);
     overflow-y: auto;
     margin: 0;
+    -webkit-overflow-scrolling: touch;
 }
 
 .search-box .result-box ul li {
@@ -61,7 +131,8 @@
     cursor: pointer;
 }
 
-.search-box .result-box ulul:not(.listheader) li:hover {
+.search-box .result-box ul:not(.listheader) li:hover,
+.search-box .result-box ul:not(.listheader) li.option-highlighted {
     background-color: #ccc;
 }
 
@@ -71,11 +142,24 @@
     padding: 0 10px 10px;
 }
 
-.reference-box {
-    flex-shrink: 0;
-    align-self:flex-end;
-}
-
 .hide {
     display: none;
+}
+
+@media (max-width: 480px) {
+    .search-box > .flex {
+        gap: 6px;
+    }
+
+    .search-box .result-box ul:not(.listheader) li {
+        padding: 10px;
+    }
+}
+
+@media (pointer: coarse) {
+    .search-box .result-box ul:not(.listheader) li {
+        min-height: 2.75rem;
+        display: flex;
+        align-items: center;
+    }
 }

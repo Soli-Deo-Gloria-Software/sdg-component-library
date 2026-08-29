@@ -7,17 +7,32 @@
 
 ## Properties
 
-| Property                | Attribute                  | Description | Type     | Default |
-| ----------------------- | -------------------------- | ----------- | -------- | ------- |
-| `maxNumberOfReferences` | `max-number-of-references` |             | `number` | `1`     |
+| Property                   | Attribute                     | Description | Type      | Default |
+| -------------------------- | ----------------------------- | ----------- | --------- | ------- |
+| `allowWholeBookSubmission` | `allow-whole-book-submission` |             | `boolean` | `false` |
+| `maxNumberOfReferences`    | `max-number-of-references`    |             | `number`  | `1`     |
 
 
 ## Events
 
-| Event               | Description | Type                            |
-| ------------------- | ----------- | ------------------------------- |
-| `referencesUpdated` |             | `CustomEvent<BibleReference[]>` |
+| Event               | Description | Type                             |
+| ------------------- | ----------- | -------------------------------- |
+| `referencesUpdated` |             | `CustomEvent<IBibleReference[]>` |
 
+
+## Dependencies
+
+### Depends on
+
+- [multiselect-results](../multiselect-results)
+
+### Graph
+```mermaid
+graph TD;
+  bible-reference-picker --> multiselect-results
+  multiselect-results --> multiselect-item
+  style bible-reference-picker fill:#f9f,stroke:#333,stroke-width:4px
+```
 
 ----------------------------------------------
 

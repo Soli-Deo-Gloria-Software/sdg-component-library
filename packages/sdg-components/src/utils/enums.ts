@@ -1,5 +1,7 @@
 export enum ReferencePickerState {
     Book = 0,
-    Chapter = 1,
-    Verse = 2
+    StartingChapter = 1,
+    StartingVerse = 2,
+    EndingChapter = 3,
+    EndingVerse = 4,
 }
