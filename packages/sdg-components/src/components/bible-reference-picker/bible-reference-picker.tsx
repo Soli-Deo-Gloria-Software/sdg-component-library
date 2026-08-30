@@ -787,16 +787,11 @@ export class BibleReferencePicker {
                 )}
                 <span class="flex-1">{this.value}</span>
                 <i class="icon circle-x bg-secondary clickable" title="clear" onClick={() => this.handleClearInput()}></i>
-                <i class={{
-                    'hide': !this.isSubmitable(),
-                    'icon': true,
-                    'circle-check': true,
-                    'clickable': true,
-                    'bg-success': true}} title="submit" onClick={() => {
+                {this.isSubmitable() && <i class='icon circle-check clickable bg-success' title="submit" onClick={() => {
                   this.handleReferenceSubmit(this.value);
                   this.resetReferenceBuilder();
                   }}
-                ></i>
+                ></i>}
               </li>
             </ul>
             <div class={{'hide' : this.step != ReferencePickerState.Book || this.books.length <= 0}}>
