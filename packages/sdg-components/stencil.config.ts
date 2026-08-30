@@ -3,6 +3,7 @@ import { angularOutputTarget } from '@stencil/angular-output-target';
 
 export const config: Config = {
   namespace: 'sdg-components',
+  tsconfig: 'tsconfig.stencil.json',
   outputTargets: [
     {
       type: 'dist',

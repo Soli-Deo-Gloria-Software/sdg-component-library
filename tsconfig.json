@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "lib": ["dom", "es2022"],
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "target": "es2022",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@stencil/core",
+    "types": ["@stencil/vitest/globals"]
+  },
+  "include": [
+    "packages/sdg-components/src/**/*.unit.test.ts",
+    "packages/sdg-components/src/**/*.unit.test.tsx",
+    "packages/sdg-components/src/components.d.ts",
+    "packages/sdg-components/src/test-jsx.d.ts",
+    "packages/sdg-components/vitest-setup.ts",
+    "packages/sdg-components/vitest.config.ts"
+  ],
+  "exclude": ["node_modules"]
+}
