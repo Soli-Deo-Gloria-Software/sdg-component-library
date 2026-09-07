@@ -1,6 +1,6 @@
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { DIRECTIVES } from './stencil-generated/index';
-import { defineCustomElements } from 'sdg-components/loader'
+import { defineCustomElements } from '@soli-deo-gloria-software/sdg-components/loader'
 
 @NgModule({
   declarations: [...DIRECTIVES],

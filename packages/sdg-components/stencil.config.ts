@@ -10,7 +10,7 @@ export const config: Config = {
       esmLoaderPath: '../loader',
     },
     angularOutputTarget({
-      componentCorePackage: 'sdg-components',
+      componentCorePackage: '@soli-deo-gloria-software/sdg-components',
       outputType: 'component',
       directivesProxyFile: '../angular-workspace/projects/sdg-components-angular/src/lib/stencil-generated/components.ts',
       directivesArrayFile: '../angular-workspace/projects/sdg-components-angular/src/lib/stencil-generated/index.ts',

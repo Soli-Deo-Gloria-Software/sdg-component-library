@@ -1,5 +1,5 @@
 {
-  "name": "sdg-components",
+  "name": "@soli-deo-gloria-software/sdg-components",
   "version": "0.0.1",
   "description": "Soli Deo Gloria Software Component Library",
   "main": "dist/index.cjs.js",
@@ -26,7 +26,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Soli-Deo-Gloria-Software/sdg-component-library"
+    "url": "https://github.com/Soli-Deo-Gloria-Software/sdg-component-library.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   },
   "files": [
     "dist/",
@@ -37,7 +41,8 @@
     "start": "stencil build --dev --watch --serve",
     "test": "stencil-test --prod",
     "test:watch": "stencil-test --prod --watch",
-    "generate": "stencil generate"
+    "generate": "stencil generate",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@stencil/angular-output-target": "^1.4.0",

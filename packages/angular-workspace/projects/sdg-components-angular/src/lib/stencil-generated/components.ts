@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Even
 
 import { ProxyCmp } from './angular-component-lib/utils';
 
-import { Components } from 'sdg-components';
+import { Components } from '@soli-deo-gloria-software/sdg-components';
 
 
 @ProxyCmp({
@@ -29,8 +29,8 @@ export class BibleReferencePicker {
 }
 
 
-import type { BibleReferencePickerCustomEvent } from 'sdg-components';
-import type { IBibleReference as IBibleReferencePickerIBibleReference } from 'sdg-components';
+import type { BibleReferencePickerCustomEvent } from '@soli-deo-gloria-software/sdg-components';
+import type { IBibleReference as IBibleReferencePickerIBibleReference } from '@soli-deo-gloria-software/sdg-components';
 
 export declare interface BibleReferencePicker extends Components.BibleReferencePicker {
 
@@ -60,7 +60,7 @@ export class MultiselectItem {
 }
 
 
-import type { MultiselectItemCustomEvent } from 'sdg-components';
+import type { MultiselectItemCustomEvent } from '@soli-deo-gloria-software/sdg-components';
 
 export declare interface MultiselectItem extends Components.MultiselectItem {
 
@@ -90,7 +90,7 @@ export class MultiselectResults {
 }
 
 
-import type { MultiselectResultsCustomEvent } from 'sdg-components';
+import type { MultiselectResultsCustomEvent } from '@soli-deo-gloria-software/sdg-components';
 
 export declare interface MultiselectResults extends Components.MultiselectResults {
 

@@ -1,10 +1,19 @@
 {
-  "name": "sdg-components-angular",
+  "name": "@soli-deo-gloria-software/sdg-components-angular",
   "version": "0.0.1",
+  "description": "Angular wrappers for the Soli Deo Gloria Software Component Library",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Soli-Deo-Gloria-Software/sdg-component-library.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
   "peerDependencies": {
     "@angular/common": "^21.2.0",
     "@angular/core": "^21.2.0",
-    "sdg-components": "*"
+    "@soli-deo-gloria-software/sdg-components": "*"
   },
   "dependencies": {
     "tslib": "^2.3.0"
