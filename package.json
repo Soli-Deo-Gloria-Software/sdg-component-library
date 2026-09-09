@@ -4,6 +4,13 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "build:components": "npm run build -w @soli-deo-gloria-software/sdg-components",
+    "build:angular": "npm run build:components && npm run build -w angular-workspace -- sdg-components-angular",
+    "publish:components": "bash scripts/publish-components.sh",
+    "publish:angular": "bash scripts/publish-angular.sh",
+    "publish:all": "bash scripts/publish-all.sh"
+  },
   "devDependencies": {
     "@types/node": "^26.1.0",
     "lerna": "^9.0.7",

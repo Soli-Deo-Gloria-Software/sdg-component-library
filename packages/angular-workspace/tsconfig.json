@@ -4,8 +4,9 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "sdg-components": ["./dist/sdg-components"],
-      "sdg-components-angular": ["./dist/sdg-components-angular"]
+      "@soli-deo-gloria-software/sdg-components": ["../sdg-components"],
+      "@soli-deo-gloria-software/sdg-components/*": ["../sdg-components/*"],
+      "@soli-deo-gloria-software/sdg-components-angular": ["./dist/sdg-components-angular"]
     },
     "strict": true,
     "noImplicitOverride": true,

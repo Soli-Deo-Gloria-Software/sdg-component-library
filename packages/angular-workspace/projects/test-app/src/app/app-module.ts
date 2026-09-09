@@ -1,6 +1,6 @@
 import { NgModule, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { SdgComponentsAngularModule } from 'sdg-components-angular';
+import { SdgComponentsAngularModule } from '@soli-deo-gloria-software/sdg-components-angular';
 
 import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
