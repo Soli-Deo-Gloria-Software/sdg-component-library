@@ -1,6 +1,6 @@
 {
   "name": "@soli-deo-gloria-software/sdg-components",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Soli Deo Gloria Software Component Library",
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
@@ -19,9 +19,9 @@
       "types": "./dist/components/bible-reference-picker.d.ts"
     },
     "./loader": {
+      "types": "./loader/index.d.ts",
       "import": "./loader/index.js",
-      "require": "./loader/index.cjs",
-      "types": "./loader/index.d.ts"
+      "require": "./loader/index.cjs.js"
     }
   },
   "repository": {
