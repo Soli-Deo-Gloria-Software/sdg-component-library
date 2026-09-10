@@ -13,6 +13,9 @@ fi
 
 PACKAGE_NAME="@soli-deo-gloria-software/sdg-components"
 
+echo "Syncing Angular wrapper version from ${PACKAGE_NAME}..."
+npm run sync:angular-version
+
 echo "Building ${PACKAGE_NAME}..."
 npm run build -w "${PACKAGE_NAME}"
 
@@ -20,3 +23,4 @@ echo "Publishing ${PACKAGE_NAME} to GitHub Packages..."
 npm publish -w "${PACKAGE_NAME}"
 
 echo "Published ${PACKAGE_NAME}."
+echo "Angular wrapper package.json was synced to match ${PACKAGE_NAME}; run publish:angular (or publish:all) to publish it."
