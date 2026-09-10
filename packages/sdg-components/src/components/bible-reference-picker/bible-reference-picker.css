@@ -2,6 +2,7 @@
     display: block;
     width: 100%;
     min-width: 0;
+    overflow: visible;
 }
 
 .search-box {
@@ -9,6 +10,7 @@
     display: block;
     width: 100%;
     min-width: 0;
+    position: relative;
 }
 
 .flex {
@@ -80,15 +82,23 @@
 
 .search-box .result-box {
     display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    z-index: 20;
     width: 100%;
     box-sizing: border-box;
+    background: #fff;
 }
 
 .search-box .result-box.show {
-    margin-top: 3px;
-    border-top: 1px solid #bbb;
+    margin-top: 6px;
+    border-radius: 0 0 3px 3px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     display: block;
     font-size: 0.85em;
+    clip-path: inset(0px -100px -100px -100px); 
 }
 
 .search-box .result-box ul.listheader {

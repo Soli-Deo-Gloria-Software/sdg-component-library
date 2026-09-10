@@ -12,7 +12,7 @@
     "publish:all": "bash scripts/publish-all.sh"
   },
   "devDependencies": {
-    "@types/node": "^26.1.0",
+    "@types/node": "^26.5.1",
     "lerna": "^9.0.7",
     "typescript": "^6.0.3"
   },
