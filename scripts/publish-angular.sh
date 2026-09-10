@@ -15,6 +15,9 @@ CORE_PACKAGE="@soli-deo-gloria-software/sdg-components"
 ANGULAR_PACKAGE="@soli-deo-gloria-software/sdg-components-angular"
 ANGULAR_DIST="${ROOT_DIR}/packages/angular-workspace/dist/sdg-components-angular"
 
+echo "Syncing ${ANGULAR_PACKAGE} version from ${CORE_PACKAGE}..."
+npm run sync:angular-version
+
 echo "Building ${CORE_PACKAGE} (required by Angular wrappers)..."
 npm run build -w "${CORE_PACKAGE}"
 

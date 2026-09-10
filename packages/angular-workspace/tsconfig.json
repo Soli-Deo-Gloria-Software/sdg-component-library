@@ -6,7 +6,9 @@
     "paths": {
       "@soli-deo-gloria-software/sdg-components": ["../sdg-components"],
       "@soli-deo-gloria-software/sdg-components/*": ["../sdg-components/*"],
-      "@soli-deo-gloria-software/sdg-components-angular": ["./dist/sdg-components-angular"]
+      "@soli-deo-gloria-software/sdg-components-angular": [
+        "./projects/sdg-components-angular/src/public-api.ts"
+      ]
     },
     "strict": true,
     "noImplicitOverride": true,
