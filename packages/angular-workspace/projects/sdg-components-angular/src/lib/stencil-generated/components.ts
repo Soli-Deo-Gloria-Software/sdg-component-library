@@ -98,3 +98,33 @@ export declare interface MultiselectResults extends Components.MultiselectResult
 }
 
 
+@ProxyCmp({
+  inputs: ['displayCircle', 'name', 'size', 'src']
+})
+@Component({
+  selector: 'user-avatar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: '<ng-content></ng-content>',
+  // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
+  inputs: ['displayCircle', { name: 'name', required: true }, 'size', 'src'],
+  outputs: ['referencesUpdated'],
+  standalone: false
+})
+export class UserAvatar {
+  protected el: HTMLUserAvatarElement;
+  @Output() referencesUpdated = new EventEmitter<UserAvatarCustomEvent<any>>();
+  constructor(c: ChangeDetectorRef, r: ElementRef, protected z: NgZone) {
+    c.detach();
+    this.el = r.nativeElement;
+  }
+}
+
+
+import type { UserAvatarCustomEvent } from '@soli-deo-gloria-software/sdg-components';
+
+export declare interface UserAvatar extends Components.UserAvatar {
+
+  referencesUpdated: EventEmitter<UserAvatarCustomEvent<any>>;
+}
+
+

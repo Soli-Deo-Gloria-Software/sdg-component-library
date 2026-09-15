@@ -1,0 +1,27 @@
+# user-avatar
+
+
+
+<!-- Auto Generated Below -->
+
+
+## Properties
+
+| Property            | Attribute        | Description | Type                                              | Default         |
+| ------------------- | ---------------- | ----------- | ------------------------------------------------- | --------------- |
+| `displayCircle`     | `display-circle` |             | `boolean`                                         | `false`         |
+| `name` _(required)_ | `name`           |             | `string`                                          | `undefined`     |
+| `size`              | `size`           |             | `AvatarSize.lg \| AvatarSize.md \| AvatarSize.sm` | `AvatarSize.md` |
+| `src`               | `src`            |             | `string`                                          | `undefined`     |
+
+
+## Events
+
+| Event               | Description | Type               |
+| ------------------- | ----------- | ------------------ |
+| `referencesUpdated` |             | `CustomEvent<any>` |
+
+
+----------------------------------------------
+
+*Built with [StencilJS](https://stenciljs.com/)*

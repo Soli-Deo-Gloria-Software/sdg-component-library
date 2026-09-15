@@ -31,3 +31,7 @@ i.icon {
     mask-repeat: no-repeat;
     mask-position: center;
 }
+
+.d-flex {
+    display: flex;
+}

@@ -4,5 +4,6 @@ import * as d from './components';
 export const DIRECTIVES = [
   d.BibleReferencePicker,
   d.MultiselectItem,
-  d.MultiselectResults
+  d.MultiselectResults,
+  d.UserAvatar
 ];
