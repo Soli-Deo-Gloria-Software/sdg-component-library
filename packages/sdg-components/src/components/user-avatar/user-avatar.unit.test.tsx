@@ -3,6 +3,7 @@
 
 import { describe, it, expect, render } from '@stencil/vitest';
 import { getAvatarColor } from '../../utils/avatar-color';
+import { AvatarSize } from '../../utils/enums/avatar-size';
 
 describe('user-avatar', () => {
   it('renders initials with a name-derived background color', async () => {
@@ -29,8 +30,8 @@ describe('user-avatar', () => {
   });
 
   it('applies size class for font scaling', async () => {
-    const { root: sm } = await render(<user-avatar name="A B" size="sm"></user-avatar>);
-    const { root: lg } = await render(<user-avatar name="A B" size="lg"></user-avatar>);
+    const { root: sm } = await render(<user-avatar name="A B" size={AvatarSize.sm}></user-avatar>);
+    const { root: lg } = await render(<user-avatar name="A B" size={AvatarSize.lg}></user-avatar>);
 
     expect(sm.shadowRoot?.querySelector('.avatar-container')?.classList.contains('sm')).toBe(true);
     expect(lg.shadowRoot?.querySelector('.avatar-container')?.classList.contains('lg')).toBe(true);
