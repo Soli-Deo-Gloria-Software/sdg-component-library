@@ -1,6 +1,7 @@
 import { Component, Host, Prop, h, Event, EventEmitter } from '@stencil/core';
 import { AvatarSize } from '../../utils/enums/avatar-size';
 import { getAvatarColor } from '../../utils/avatar-color';
+import { AvatarStyle } from '../../utils/enums/avatar-style';
 
 @Component({
   tag: 'user-avatar',
@@ -11,7 +12,7 @@ import { getAvatarColor } from '../../utils/avatar-color';
 export class UserAvatar {
   @Prop() src?: string;
   @Prop() name!: string;
-  @Prop() displayCircle: boolean = false;
+  @Prop() avatarStyle: AvatarStyle = AvatarStyle.Square;
   @Prop() size: AvatarSize = AvatarSize.md;
 
   @Event() referencesUpdated!: EventEmitter;
@@ -27,7 +28,8 @@ export class UserAvatar {
           'avatar-container': true,
           'lg': this.size == AvatarSize.lg,
           'sm': this.size == AvatarSize.sm,
-          'round': this.displayCircle}}
+          'round': this.avatarStyle == AvatarStyle.Round,
+          'rounded-corners': this.avatarStyle == AvatarStyle.RoundedSquare}}
           onClick={this.referencesUpdated.emit}
           title={this.name}>
           <span
