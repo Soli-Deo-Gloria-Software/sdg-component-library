@@ -43,15 +43,22 @@
     "test:watch": "stencil-test --prod --watch",
     "generate": "stencil generate",
     "version": "node ../../scripts/sync-angular-version.mjs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "storybook": "npm run build && storybook dev -p 6006",
+    "build-storybook": "npm run build && storybook build"
   },
   "devDependencies": {
     "@stencil/angular-output-target": "^1.4.1",
     "@stencil/core": "^4.44.2",
     "@stencil/vitest": "^1.8.3",
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/web-components-vite": "^10.6.0",
     "@types/node": "^22.13.5",
     "@vitest/browser-playwright": "^4.0.0",
+    "lit": "^3.3.3",
     "playwright": "^1.63.0",
+    "storybook": "^10.6.0",
     "vitest": "^4.0.0"
   },
   "license": "MIT",

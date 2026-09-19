@@ -9,8 +9,12 @@
     "src/**/*.spec.ts",
     "src/**/*.spec.tsx",
     "src/**/*.e2e.ts",
+    "src/**/*.stories.ts",
+    "src/**/*.stories.tsx",
+    "src/**/*.mdx",
     "src/test-jsx.d.ts",
     "vitest-setup.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    ".storybook"
   ]
 }

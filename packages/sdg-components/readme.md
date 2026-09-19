@@ -27,6 +27,18 @@ npm install
 npm start
 ```
 
+### Storybook playground
+
+Interactive docs and controls for each component:
+
+```bash
+# from repo root
+npm run storybook
+```
+
+This builds the Stencil package, then opens Storybook at http://localhost:6006.  
+Use `npm run build-storybook` to generate a static site under `storybook-static/`.
+
 To build the component for production, run:
 
 ```bash

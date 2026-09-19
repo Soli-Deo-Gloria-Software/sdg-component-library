@@ -8,6 +8,8 @@
     "build:components": "npm run build -w @soli-deo-gloria-software/sdg-components",
     "build:angular": "npm run sync:angular-version && npm run build:components && npm run build -w angular-workspace -- sdg-components-angular",
     "start:angular": "npm run build:components && npm run start -w angular-workspace",
+    "storybook": "npm run storybook -w @soli-deo-gloria-software/sdg-components",
+    "build-storybook": "npm run build-storybook -w @soli-deo-gloria-software/sdg-components",
     "sync:angular-version": "node scripts/sync-angular-version.mjs",
     "publish:components": "bash scripts/publish-components.sh",
     "publish:angular": "bash scripts/publish-angular.sh",
