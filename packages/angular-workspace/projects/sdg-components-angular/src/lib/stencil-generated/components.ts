@@ -99,14 +99,14 @@ export declare interface MultiselectResults extends Components.MultiselectResult
 
 
 @ProxyCmp({
-  inputs: ['displayCircle', 'name', 'size', 'src']
+  inputs: ['avatarStyle', 'name', 'size', 'src']
 })
 @Component({
   selector: 'user-avatar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['displayCircle', { name: 'name', required: true }, 'size', 'src'],
+  inputs: ['avatarStyle', { name: 'name', required: true }, 'size', 'src'],
   outputs: ['referencesUpdated'],
   standalone: false
 })
