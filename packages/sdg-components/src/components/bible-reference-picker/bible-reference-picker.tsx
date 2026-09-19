@@ -1,7 +1,7 @@
 import { Component, Host, State, Prop, Event, EventEmitter, h, Listen, Element } from '@stencil/core';
 import { BibleBookInfo, BibleBooks, BibleChapter } from '@soli-deo-gloria-software/bible-books'
 import { BibleParser, BibleReference, IBibleReference, RawBibleParseResult} from '@soli-deo-gloria-software/bible-reference-finder'
-import { ReferencePickerState } from '../../utils/enums';
+import { ReferencePickerState } from '../../utils/enums/reference-picker-state';
 
 type SelectableOption =
   | { type: 'book'; book: BibleBookInfo }

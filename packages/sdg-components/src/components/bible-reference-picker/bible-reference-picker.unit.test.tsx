@@ -2,7 +2,7 @@
 /* @jsxImportSource @stencil/core */
 
 import { describe, it, expect, render, beforeEach, afterEach, vi } from '@stencil/vitest';
-import { ReferencePickerState } from '../../utils/enums'
+import { ReferencePickerState } from '../../utils/enums/reference-picker-state'
 
 const dispatchInput = (input: HTMLInputElement, value: string) => {
   input.value = value;
