@@ -4,6 +4,10 @@ import { angularOutputTarget } from '@stencil/angular-output-target';
 export const config: Config = {
   namespace: 'sdg-components',
   tsconfig: 'tsconfig.stencil.json',
+  // Required so Vite/Storybook can resolve lazy-loaded component chunks.
+  extras: {
+    enableImportInjection: true,
+  },
   outputTargets: [
     {
       type: 'dist',

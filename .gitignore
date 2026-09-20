@@ -142,5 +142,6 @@ www/
 dist/
 .stencil/
 loader/
+storybook-static/
 .vscode
 *.d.ts
